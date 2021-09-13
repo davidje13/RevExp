@@ -10,6 +10,10 @@ flags, and unicode character classes. Word boundaries (`\b` / `\B`) are partiall
 
 ### Library
 
+```shell
+npm install --save revexp
+```
+
 ```javascript
 import RevExp from 'revexp';
 

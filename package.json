@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/davidje13/revexp.git"
+    "url": "git+https://github.com/davidje13/RevExp.git"
   },
   "keywords": [
     "regular-expression"
@@ -25,9 +25,9 @@
   "author": "David Evans",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/davidje13/revexp/issues"
+    "url": "https://github.com/davidje13/RevExp/issues"
   },
-  "homepage": "https://github.com/davidje13/revexp#readme",
+  "homepage": "https://github.com/davidje13/RevExp#readme",
   "devDependencies": {
     "rollup": "^2.56.3",
     "rollup-plugin-terser": "^7.0.2"
