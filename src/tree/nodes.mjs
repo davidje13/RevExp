@@ -11,9 +11,9 @@ export class Assertion {
 }
 
 export class BoundaryAssertion {
-	constructor(range, inverted) {
-		this.range = range;
-		this.invRange = range.inverse();
+	constructor(chars, inverted) {
+		this.chars = chars;
+		this.invChars = chars.inverse();
 		this.inverted = inverted;
 	}
 
@@ -21,13 +21,13 @@ export class BoundaryAssertion {
 		const end = [{ advance: -1, nexts }];
 		if (this.inverted) {
 			return [{ advance: -1, nexts: [
-				...this.range.toGraph(this.range.toGraph(end)),
-				...this.invRange.toGraph(this.invRange.toGraph(end)),
+				...this.chars.toGraph(this.chars.toGraph(end)),
+				...this.invChars.toGraph(this.invChars.toGraph(end)),
 			] }];
 		} else {
 			return [{ advance: -1, nexts: [
-				...this.range.toGraph(this.invRange.toGraph(end)),
-				...this.invRange.toGraph(this.range.toGraph(end)),
+				...this.chars.toGraph(this.invChars.toGraph(end)),
+				...this.invChars.toGraph(this.chars.toGraph(end)),
 			] }];
 		}
 	}

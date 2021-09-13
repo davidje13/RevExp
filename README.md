@@ -11,19 +11,19 @@ flags, and unicode character classes. Word boundaries (`\b` / `\B`) are partiall
 ### Library
 
 ```javascript
-import { RevExp, CharacterRange } from 'revexp';
+import RevExp from 'revexp';
 
 // compile the pattern
 const pattern = new RevExp('a[bc]|x[yz]');
 
 // provide already known information - the first character is unknown, the second must be "c"
-const known = CharacterRange.string('?c', '?');
+const known = RevExp.string('?c', '?');
 
 // resolve as much of the data as possible
 const resolved = pattern.reverse(known);
 
 // print it in a human-friendly format
-console.log(CharacterRange.print(resolved)); // "ac"
+console.log(String(resolved)); // "ac"
 ```
 
 ### CLI

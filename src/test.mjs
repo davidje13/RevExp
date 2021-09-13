@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { RevExp, CharacterRange } from './index.mjs';
+import RevExp from './RevExp.mjs';
 
 const results = runTests([
 	['a', // literal
@@ -35,29 +35,29 @@ const results = runTests([
 		['????', 'a[bc][d-g]h'],
 	],
 
-	['[a-dfghi]', // character range
+	['[a-dfghi]', // character class
 		['?', '[a-df-i]'],
 		['b', 'b'],
 		['e', null],
 	],
 
-	['[a-cbb]', // overlapping character range
+	['[a-cbb]', // character class with overlapping ranges
 		['?', '[abc]'],
 		['b', 'b'],
 		['e', null],
 	],
 
-	['\\d', // built-in character range
+	['\\d', // built-in character class
 		['?', '[0-9]'],
 	],
 
-	['[^a-dx]', // negated character range
+	['[^a-dx]', // negated character class
 		['?', '[^a-dx]'],
 		['e', 'e'],
 		['b', null],
 	],
 
-	['[a-d][^rt-vZ-W]', // complex character ranges
+	['[a-d][^rt-vZ-W]', // complex character classes
 		['?w', '[a-d]w'],
 	],
 
@@ -197,11 +197,11 @@ const results = runTests([
 		['???', ' JJ'],
 	],
 
-	['[\\u0020\\u004a\\u004A]', // range unicode escape
+	['[\\u0020\\u004a\\u004A]', // character class unicode escape
 		['?', '[ J]'],
 	],
 
-	['(\\d|\\u0020)*(x+y?z)+', // complex range combinations
+	['(\\d|\\u0020)*(x+y?z)+', // complex character class combinations
 		['?????', '[ 0-9x][ 0-9xyz][ 0-9xz][xy]z'],
 	],
 
@@ -356,8 +356,8 @@ function runTests(patterns, out) {
 		for (const [test, answer] of tests) {
 			const name = JSON.stringify(test);
 			try {
-				const result = revexp.reverse(CharacterRange.string(test, '?'));
-				const sresult = result ? CharacterRange.print(result) : null;
+				const result = revexp.reverse(test, '?');
+				const sresult = result ? String(result) : null;
 				if (sresult === answer) {
 					out.write(`${indent}${pass} ${name} => ${JSON.stringify(sresult)}\n`);
 				} else {

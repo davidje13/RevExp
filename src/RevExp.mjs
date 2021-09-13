@@ -1,4 +1,5 @@
-import CharacterRange from './CharacterRange.mjs';
+import CharacterClass from './CharacterClass.mjs';
+import CharacterClassString from './CharacterClassString.mjs';
 import toAST from './tree/toAST.mjs';
 
 const mod = (a, b) => (((a % b) + b) % b);
@@ -9,8 +10,8 @@ function check(positions, pos, rule) {
 			return false; // position assertion failed
 		}
 	}
-	if (rule.range) {
-		if (!positions[pos].inputRange.intersects(rule.range)) {
+	if (rule.chars) {
+		if (!positions[pos].inputChars.intersects(rule.chars)) {
 			return false;
 		}
 	}
@@ -38,17 +39,17 @@ export default class RevExp {
 		this.beginNodes = ast.toGraph([this.endNode]);
 	}
 
-	reverse(value) {
-		const ranges = CharacterRange.string(value);
-		const length = ranges.length;
+	reverse(value, unknown = null) {
+		const inputCharsString = CharacterClassString(value, unknown);
+		const length = inputCharsString.length;
 
 		// add virtual "end state" position
-		ranges.push(CharacterRange.NONE);
+		inputCharsString.push(CharacterClass.NONE);
 
-		const positions = ranges.map((range) => ({
-			inputRange: range,
+		const positions = inputCharsString.map((chars) => ({
+			inputChars: chars,
 			states: new Map(),
-			resolved: CharacterRange.NONE,
+			resolved: CharacterClass.NONE,
 		}));
 
 		let active = [{
@@ -99,8 +100,8 @@ export default class RevExp {
 					continue;
 				}
 				const p = positions[a.pos];
-				if (a.node.range) {
-					p.resolved = p.resolved.union(a.node.range);
+				if (a.node.chars) {
+					p.resolved = p.resolved.union(a.node.chars);
 				}
 				nextActive.push(...a.prevs);
 				a.node = null;
@@ -109,11 +110,11 @@ export default class RevExp {
 		}
 
 		positions.pop(); // remove trailing end-of-input
-		return positions.map((p) => (p.inputRange.intersect(p.resolved)));
+		return CharacterClassString(positions.map((p) => (p.inputChars.intersect(p.resolved))));
 	}
 
-	test(value) {
-		return this.reverse(value) !== null;
+	test(value, unknown = null) {
+		return this.reverse(value, unknown) !== null;
 	}
 
 	toString() {
@@ -122,3 +123,5 @@ export default class RevExp {
 }
 
 RevExp.compile = (p) => new RevExp(p);
+RevExp.CharacterClass = CharacterClass;
+RevExp.string = CharacterClassString;

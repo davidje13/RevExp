@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { RevExp, CharacterRange } from '../src/index.mjs';
+import RevExp from '../src/RevExp.mjs';
 
 let pattern = '';
 let input = '';
@@ -21,9 +21,8 @@ if (pattern === undefined || input === undefined) {
 
 try {
 	const revexp = new RevExp(pattern);
-	const inputRanges = CharacterRange.string(input, unknown);
-	const outputRanges = revexp.reverse(inputRanges);
-	process.stdout.write(CharacterRange.print(outputRanges) + '\n');
+	const result = revexp.reverse(input, unknown);
+	process.stdout.write(`${result}\n`);
 } catch (e) {
 	process.stderr.write(`${e}\n`);
 	process.exit(1);

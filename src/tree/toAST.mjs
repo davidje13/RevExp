@@ -1,5 +1,5 @@
 import ConsumableString from './ConsumableString.mjs';
-import CharacterRange from '../CharacterRange.mjs';
+import CharacterClass from '../CharacterClass.mjs';
 import {
 	Assertion,
 	BoundaryAssertion,
@@ -22,27 +22,27 @@ const readHex = (v) => {
 };
 
 const ESC = new Map([
-	['d', CharacterRange.NUMERIC],
-	['D', CharacterRange.NUMERIC.inverse()],
-	['w', CharacterRange.ALPHA_NUMERIC],
-	['W', CharacterRange.ALPHA_NUMERIC.inverse()],
-	['s', CharacterRange.SPACE],
-	['S', CharacterRange.SPACE.inverse()],
-	['t', CharacterRange.of('\t')],
-	['r', CharacterRange.of('\r')],
-	['n', CharacterRange.of('\n')],
-	['v', CharacterRange.of('\v')],
-	['f', CharacterRange.of('\f')],
-	['b', new BoundaryAssertion(CharacterRange.ALPHA_NUMERIC, false)],
-	['B', new BoundaryAssertion(CharacterRange.ALPHA_NUMERIC, true)],
-	['0', CharacterRange.of('\u0000')],
-	['c', (cs) => CharacterRange.ofCode(1 + cs.get(1).charCodeAt(0) - CHAR_A)],
-	['x', (cs) => CharacterRange.ofCode(readHex(cs.get(2)))],
+	['d', CharacterClass.NUMERIC],
+	['D', CharacterClass.NUMERIC.inverse()],
+	['w', CharacterClass.ALPHA_NUMERIC],
+	['W', CharacterClass.ALPHA_NUMERIC.inverse()],
+	['s', CharacterClass.SPACE],
+	['S', CharacterClass.SPACE.inverse()],
+	['t', CharacterClass.of('\t')],
+	['r', CharacterClass.of('\r')],
+	['n', CharacterClass.of('\n')],
+	['v', CharacterClass.of('\v')],
+	['f', CharacterClass.of('\f')],
+	['b', new BoundaryAssertion(CharacterClass.ALPHA_NUMERIC, false)],
+	['B', new BoundaryAssertion(CharacterClass.ALPHA_NUMERIC, true)],
+	['0', CharacterClass.of('\u0000')],
+	['c', (cs) => CharacterClass.ofCode(1 + cs.get(1).charCodeAt(0) - CHAR_A)],
+	['x', (cs) => CharacterClass.ofCode(readHex(cs.get(2)))],
 	['u', (cs) => {
 		const code = cs.check('{') ? cs.readUntil('}', true) : cs.get(4);
-		return CharacterRange.ofCode(readHex(code));
+		return CharacterClass.ofCode(readHex(code));
 	}],
-	['\\', CharacterRange.of('\\')],
+	['\\', CharacterClass.of('\\')],
 	['k', (cs) => {
 		if (!cs.check('<')) {
 			throw new Error('Incomplete named backreference');
@@ -50,16 +50,16 @@ const ESC = new Map([
 		return new BackReference(cs.readUntil('>', true));
 	}],
 ]);
-const RANGE_ESC = new Map(ESC);
-RANGE_ESC.set('b', CharacterRange.of('\b'));
-RANGE_ESC.delete('B');
-RANGE_ESC.delete('k');
+const CHAR_CLASS_ESC = new Map(ESC);
+CHAR_CLASS_ESC.set('b', CharacterClass.of('\b'));
+CHAR_CLASS_ESC.delete('B');
+CHAR_CLASS_ESC.delete('k');
 for (let i = 1; i < 10; ++ i) {
 	ESC.set(String(i), new BackReference(i));
 }
 
 function resolve(lookup, cs, c) {
-	const v = lookup.get(c) ?? CharacterRange.of(c);
+	const v = lookup.get(c) ?? CharacterClass.of(c);
 	return (typeof v === 'function') ? v(cs) : v;
 }
 
@@ -83,7 +83,7 @@ const readQuantifier = (cs) => {
 	return new Quantifier(min, max, readQuantifierMode(cs));
 };
 
-const readRange = (cs) => {
+const readCharacterClass = (cs) => {
 	const invert = cs.check('^');
 	const parts = [];
 	let nextRange = false;
@@ -91,7 +91,7 @@ const readRange = (cs) => {
 		if (c === '-' && parts.length > 0) {
 			nextRange = true;
 		} else {
-			let part = (c === '\\') ? resolve(RANGE_ESC, cs, cs.get()) : CharacterRange.of(c);
+			let part = (c === '\\') ? resolve(CHAR_CLASS_ESC, cs, cs.get()) : CharacterClass.of(c);
 			if (nextRange) {
 				nextRange = false;
 				part = parts.pop().rangeTo(part);
@@ -102,8 +102,8 @@ const readRange = (cs) => {
 	if (nextRange) {
 		throw new Error(`Incomplete character range at ${cs.pos}`);
 	}
-	const range = CharacterRange.union(...parts);
-	return invert ? range.inverse() : range;
+	const chars = CharacterClass.union(...parts);
+	return invert ? chars.inverse() : chars;
 };
 
 const getGroupMode = (cs) => {
@@ -169,7 +169,7 @@ const SPECIALS = new Map([
 	['^', new PosAssertion(0)],
 	['$', new PosAssertion(-1)],
 	['|', OR],
-	['.', CharacterRange.ANY],
+	['.', CharacterClass.ANY],
 	['?', (cs) => new Quantifier(0, 1, readQuantifierMode(cs))],
 	['+', (cs) => new Quantifier(1, null, readQuantifierMode(cs))],
 	['*', (cs) => new Quantifier(0, null, readQuantifierMode(cs))],
@@ -187,7 +187,7 @@ const SPECIALS = new Map([
 		}
 	}],
 	['{', readQuantifier],
-	['[', readRange],
+	['[', readCharacterClass],
 ]);
 
 export default function toAST(pattern) {

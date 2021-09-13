@@ -4,7 +4,7 @@
   "description": "reverse regular expression computation",
   "bin": "./bin/revexp.mjs",
   "main": "build/index.js",
-  "module": "src/index.mjs",
+  "module": "src/RevExp.mjs",
   "files": [
     "bin/**/*",
     "build/**/*",
