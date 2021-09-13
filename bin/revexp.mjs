@@ -5,7 +5,7 @@ import RevExp from '../src/RevExp.mjs';
 let pattern = '';
 let input = '';
 let unknown = '?';
-if (process.argv[2].startsWith('-u')) {
+if (process.argv[2]?.startsWith('-u')) {
 	unknown = process.argv[2].substr(2, 1);
 	pattern = process.argv[3];
 	input = process.argv[4];
