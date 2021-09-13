@@ -1,5 +1,3 @@
-import ASTNode from './ASTNode.mjs';
-
 const escapeSpecial = (special, v) => v.replace(special, (x) => `\\u${x.charCodeAt(0).toString(16).padStart(4, '0')}`);
 const escapeSpecialRegular = escapeSpecial.bind(null, /[^-a-zA-Z0-9 ,:;'"!@%&_=<>`~]/g);
 const escapeSpecialCharRange = escapeSpecial.bind(null, /[^a-zA-Z0-9 ,:;'"!@%&_=<>`~(){}.?+*$]/g);
@@ -29,9 +27,8 @@ const printRange = (chars) => {
 	return r.join('');
 };
 
-export default class CharacterRange extends ASTNode {
+export default class CharacterRange {
 	constructor(chars, inverted = false) {
-		super('range');
 		this.chars = chars;
 		this.inverted = inverted;
 	}

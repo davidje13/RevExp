@@ -1,6 +1,5 @@
 import CharacterRange from './CharacterRange.mjs';
 import ConsumableString from './ConsumableString.mjs';
-import ASTNode from './ASTNode.mjs';
 
 const CHAR_A = 'A'.charCodeAt(0);
 const HEX_CHECK = /^[0-9a-fA-F]+$/;
@@ -12,9 +11,8 @@ const readHex = (v) => {
 	return Number.parseInt(v, 16);
 };
 
-class Assertion extends ASTNode {
+class Assertion {
 	constructor(mode, inverted, condition = null) {
-		super('assertion');
 		this.mode = mode;
 		this.inverted = inverted;
 		this.condition = condition;
@@ -25,9 +23,8 @@ class Assertion extends ASTNode {
 	}
 }
 
-class BoundaryAssertion extends ASTNode {
+class BoundaryAssertion {
 	constructor(range, inverted) {
-		super('boundary-assertion');
 		this.range = range;
 		this.invRange = range.inverse();
 		this.inverted = inverted;
@@ -49,9 +46,8 @@ class BoundaryAssertion extends ASTNode {
 	}
 }
 
-class PosAssertion extends ASTNode {
+class PosAssertion {
 	constructor(pos) {
-		super('position-assertion');
 		this.pos = pos;
 	}
 
@@ -60,9 +56,8 @@ class PosAssertion extends ASTNode {
 	}
 }
 
-class BackReference extends ASTNode {
+class BackReference {
 	constructor(ref) {
-		super('backreference');
 		this.ref = ref;
 	}
 
@@ -71,9 +66,8 @@ class BackReference extends ASTNode {
 	}
 }
 
-class Quantifier extends ASTNode {
+class Quantifier {
 	constructor(min, max, mode, target = null) {
-		super('quantifier');
 		this.min = min;
 		this.max = max;
 		this.mode = mode;
@@ -111,9 +105,8 @@ class Quantifier extends ASTNode {
 	}
 }
 
-class Chain extends ASTNode {
+class Chain {
 	constructor(elements) {
-		super('chain');
 		this.elements = elements;
 	}
 
@@ -126,9 +119,8 @@ class Chain extends ASTNode {
 	}
 }
 
-class Choice extends ASTNode {
+class Choice {
 	constructor(options) {
-		super('choice');
 		this.options = options;
 	}
 
@@ -141,9 +133,8 @@ class Choice extends ASTNode {
 	}
 }
 
-class CapturingGroup extends ASTNode {
+class CapturingGroup {
 	constructor(name, target) {
-		super('group');
 		this.name = name;
 		this.target = target;
 	}
@@ -153,7 +144,7 @@ class CapturingGroup extends ASTNode {
 	}
 }
 
-const OR = new ASTNode('or');
+const OR = Symbol();
 
 const ESC = new Map([
 	['d', CharacterRange.NUMERIC],
