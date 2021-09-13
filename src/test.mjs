@@ -6,6 +6,7 @@ const results = runTests([
 	['a', // literal
 		['?', 'a'],
 		['a', 'a'],
+		['aa', null],
 		['', null],
 		['??', null],
 		['b', null],
