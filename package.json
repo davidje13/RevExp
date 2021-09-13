@@ -1,0 +1,24 @@
+{
+  "name": "revexp",
+  "version": "1.0.0",
+  "description": "reverse regular expression computation",
+  "bin": "./bin/revexp.mjs",
+  "main": "src/index.mjs",
+  "scripts": {
+    "test": "./src/test.mjs",
+    "revexp": "./bin/revexp.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davidje13/revexp.git"
+  },
+  "keywords": [
+    "regular-expression"
+  ],
+  "author": "David Evans",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/davidje13/revexp/issues"
+  },
+  "homepage": "https://github.com/davidje13/revexp#readme"
+}
