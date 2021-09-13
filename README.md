@@ -49,7 +49,7 @@ npx revexp -u'.' 'a[bc]|x[yz]' '.c'
 | `(hello\|hi)`        | `??`       | `hi`                   |
 | `(hello\|hi)`        | `?????`    | `hello`                |
 | `(hello\|hi) *`      | `?????`    | `h[ei][ l][ l][ o]`    |
-| `(hello\|hi) *`      | `???? `    | `hi   `                |
+| `(hello\|hi) *`      | `???? `    | `hi  `                 |
 | `(a[bc]d\|e(f\|gh))` | `???`      | `[ae][bcg][dh]`        |
 | `(a[bc]d\|e(f\|gh))` | `?g?`      | `egh`                  |
 | ` *a{4} +a{2} *`     | `????????` | `[ a]aaa[ a][ a]a[ a]` |
