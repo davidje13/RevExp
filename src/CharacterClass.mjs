@@ -157,7 +157,7 @@ CharacterClass.range = (a, b) => {
 	}
 	return new CharacterClass(v);
 };
-CharacterClass.union = (...r) => r.reduce((a, b) => a.union(b));
+CharacterClass.union = (...r) => r.reduce((a, b) => a.union(b), CharacterClass.NONE);
 
 CharacterClass.NUMERIC = CharacterClass.range('0', '9');
 CharacterClass.ALPHA_NUMERIC = CharacterClass.union(
