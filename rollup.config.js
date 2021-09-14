@@ -9,5 +9,5 @@ export default {
 			name: 'revexp',
 		},
 	],
-	plugins: [terser()],
+	plugins: [terser({ format: { ascii_only: true } })],
 };
