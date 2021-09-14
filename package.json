@@ -5,6 +5,7 @@
   "bin": "./bin/revexp.mjs",
   "main": "build/index.js",
   "module": "src/RevExp.mjs",
+  "types": "index.d.ts",
   "files": [
     "bin/**/*",
     "build/**/*",
