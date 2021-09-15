@@ -1,39 +1,41 @@
-declare class CharacterClass {
-	public includes(char: string): boolean;
-	public isEmpty(): boolean;
-	public isSingular(): boolean;
-	public singularChar(): string;
-	public intersects(other: CharacterClass): boolean;
-	public intersect(other: CharacterClass): CharacterClass;
-	public union(other: CharacterClass): CharacterClass;
-	public rangeTo(other: CharacterClass): CharacterClass;
-	public inverse(): CharacterClass;
+declare namespace RevExp {
+	class CharacterClass {
+		public includes(char: string): boolean;
+		public isEmpty(): boolean;
+		public isSingular(): boolean;
+		public singularChar(): string;
+		public intersects(other: CharacterClass): boolean;
+		public intersect(other: CharacterClass): CharacterClass;
+		public union(other: CharacterClass): CharacterClass;
+		public rangeTo(other: CharacterClass): CharacterClass;
+		public inverse(): CharacterClass;
 
-	public static readonly ANY: CharacterClass;
-	public static readonly NONE: CharacterClass;
-	public static readonly NUMERIC: CharacterClass;
-	public static readonly ALPHA_NUMERIC: CharacterClass;
-	public static readonly SPACE: CharacterClass;
+		public static readonly ANY: CharacterClass;
+		public static readonly NONE: CharacterClass;
+		public static readonly NUMERIC: CharacterClass;
+		public static readonly ALPHA_NUMERIC: CharacterClass;
+		public static readonly SPACE: CharacterClass;
 
-	public static of(chars: string | string[]): CharacterClass;
-	public static ofCode(code: number): CharacterClass;
-	public static range(a: string, b: string): CharacterClass;
-	public static union(...classes: CharacterClass[]): CharacterClass;
+		public static of(chars: string | string[]): CharacterClass;
+		public static ofCode(code: number): CharacterClass;
+		public static range(a: string, b: string): CharacterClass;
+		public static union(...classes: CharacterClass[]): CharacterClass;
+	}
 }
 
-export default class RevExp {
+declare class RevExp {
 	public constructor(
 		pattern: string | RegExp | RevExp,
 		flags?: string | null | undefined,
 	);
 
 	public reverse(
-		value: string | string[] | CharacterClass[],
+		value: string | string[] | RevExp.CharacterClass[],
 		unknown?: string | null | undefined,
-	): CharacterClass[] | null;
+	): RevExp.CharacterClass[] | null;
 
 	public test(
-		value: string | string[] | CharacterClass[],
+		value: string | string[] | RevExp.CharacterClass[],
 		unknown?: string | null | undefined,
 	): boolean;
 
@@ -46,12 +48,12 @@ export default class RevExp {
 	public readonly sticky: boolean;
 	public readonly unicode: boolean;
 
-	public static readonly CharacterClass: typeof CharacterClass;
-
 	public static compile(pattern: string): RevExp;
 
 	public static string(
-		value: string | string[] | CharacterClass[],
+		value: string | string[] | RevExp.CharacterClass[],
 		unknown?: string | null | undefined,
-	): CharacterClass[];
+	): RevExp.CharacterClass[];
 }
+
+export default RevExp;
