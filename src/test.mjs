@@ -288,6 +288,7 @@ const results = runTests([
 	['a{1a}', 'Invalid character in quantifier'],
 	['a**', 'Invalid quantifier target'],
 	['(?:a*)*', 'Invalid quantifier target'], // maybe this should be allowed? it is allowed by RegExp, but is functionally the same as a**
+	['(?nope)', 'Invalid group flags'],
 	['\\', 'Incomplete token'],
 	['\\u', 'Incomplete token'],
 	['\\u000', 'Incomplete token'],

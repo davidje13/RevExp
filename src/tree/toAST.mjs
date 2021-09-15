@@ -123,6 +123,7 @@ const getGroupMode = (cs) => {
 	} else if (cs.check('<')) {
 		return { type: 'capturing', name: cs.readUntil('>', true) };
 	}
+	throw new Error(`Invalid group flags at ${cs.pos}`);
 }
 
 function toChain(tokens) {
