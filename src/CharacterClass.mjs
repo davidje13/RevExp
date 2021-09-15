@@ -52,6 +52,24 @@ export default class CharacterClass {
 		return this.chars[0];
 	}
 
+	equals(other) {
+		if (this === other) {
+			return true;
+		}
+		if (this.inverted !== other.inverted || this.chars.length !== other.chars.length) {
+			return false;
+		}
+		// char code ordering
+		this.chars.sort();
+		other.chars.sort();
+		for (let i = 0; i < this.chars.length; ++i) {
+			if (this.chars[i] !== other.chars[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	intersects(other) {
 		if (this.inverted && other.inverted) {
 			return true;

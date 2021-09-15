@@ -4,6 +4,7 @@ declare namespace RevExp {
 		public isEmpty(): boolean;
 		public isSingular(): boolean;
 		public singularChar(): string;
+		public equals(other: CharacterClass): boolean;
 		public intersects(other: CharacterClass): boolean;
 		public intersect(other: CharacterClass): CharacterClass;
 		public union(other: CharacterClass): CharacterClass;
