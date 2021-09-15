@@ -48,6 +48,14 @@ const results = runTests([
 		['e', null],
 	],
 
+	['[]', // empty character class
+		['?', null],
+	],
+
+	['[^]', // any character class
+		['?', '.'],
+	],
+
 	['\\d', // built-in character class
 		['?', '[0-9]'],
 	],

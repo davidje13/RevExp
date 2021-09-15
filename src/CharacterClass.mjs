@@ -58,12 +58,12 @@ export default class CharacterClass {
 		}
 		if (!this.inverted) {
 			if (!other.chars.length) {
-				return other.inverted;
+				return this.chars.length > 0 && other.inverted;
 			}
 			return this.chars.some((c) => other.includes(c));
 		}
 		if (!this.chars.length) {
-			return true;
+			return other.chars.length > 0;
 		}
 		return other.chars.some((c) => this.includes(c));
 	}
@@ -131,7 +131,7 @@ export default class CharacterClass {
 
 	toString() {
 		if (!this.chars.length) {
-			return this.inverted ? '.' : '\\u0000';
+			return this.inverted ? '.' : '[]';
 		}
 		this.chars.sort(); // char code ordering
 		if (this.inverted) {
