@@ -1,6 +1,6 @@
 {
   "name": "revexp",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "reverse regular expression computation",
   "bin": "./bin/revexp.mjs",
   "main": "build/index.js",
