@@ -42,6 +42,8 @@ export class PosAssertion {
 		return [{ pos: this.pos, nexts }];
 	}
 }
+PosAssertion.BEGIN = new PosAssertion(0);
+PosAssertion.END = new PosAssertion(-1);
 
 export class BackReference {
 	constructor(ref) {
@@ -130,5 +132,16 @@ export class CapturingGroup {
 		return this.target.toGraph(nexts);
 	}
 }
+
+class AdvanceChar {
+	constructor(advance) {
+		this.advance = advance;
+	}
+
+	toGraph(nexts) {
+		return [{ advance: this.advance, nexts }];
+	}
+}
+export const REWIND_CHAR = new AdvanceChar(-1);
 
 export const OR = Symbol();

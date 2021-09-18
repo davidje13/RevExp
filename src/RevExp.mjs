@@ -20,12 +20,13 @@ function check(positions, pos, rule) {
 
 function parseFlags(flags) {
 	return {
-		dotAll: flags.includes('s'),
-		global: flags.includes('g'),
 		hasIndices: flags.includes('d'),
+		global: flags.includes('g'),
 		ignoreCase: flags.includes('i'),
-		sticky: flags.includes('y'),
+		multiline: flags.includes('m'),
+		dotAll: flags.includes('s'),
 		unicode: flags.includes('u'),
+		sticky: flags.includes('y'),
 	};
 }
 

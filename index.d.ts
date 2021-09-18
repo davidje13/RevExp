@@ -43,12 +43,13 @@ declare class RevExp {
 
 	public readonly source: string;
 	public readonly flags: string;
-	public readonly dotAll: boolean;
-	public readonly global: boolean;
 	public readonly hasIndices: boolean;
+	public readonly global: boolean;
 	public readonly ignoreCase: boolean;
-	public readonly sticky: boolean;
+	public readonly multiline: boolean;
+	public readonly dotAll: boolean;
 	public readonly unicode: boolean;
+	public readonly sticky: boolean;
 
 	public static compile(pattern: string, flags?: string | null | undefined): RevExp;
 

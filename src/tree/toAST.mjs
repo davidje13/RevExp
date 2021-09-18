@@ -9,6 +9,7 @@ import {
 	Chain,
 	Choice,
 	CapturingGroup,
+	REWIND_CHAR,
 	OR,
 } from './nodes.mjs';
 
@@ -169,8 +170,8 @@ function postProc(tokens) {
 
 const SPECIALS = new Map([
 	['\\', (cs, context) => resolve(ESC, cs, cs.get(), context)],
-	['^', new PosAssertion(0)],
-	['$', new PosAssertion(-1)],
+	['^', (cs, context) => context.begin],
+	['$', (cs, context) => context.end],
 	['|', OR],
 	['.', (cs, context) => context.any],
 	['?', (cs) => new Quantifier(0, 1, readQuantifierMode(cs))],
@@ -197,6 +198,8 @@ export default function toAST(pattern, flags) {
 	const context = {
 		flags,
 		any: flags.dotAll ? CharacterClass.ANY : CharacterClass.NEWLINE.inverse(),
+		begin: flags.multiline ? new Choice([new Chain([REWIND_CHAR, CharacterClass.NEWLINE]), PosAssertion.BEGIN]) : PosAssertion.BEGIN,
+		end: flags.multiline ? new Choice([new Chain([CharacterClass.NEWLINE, REWIND_CHAR]), PosAssertion.END]) : PosAssertion.END,
 	};
 
 	const tokens = [];

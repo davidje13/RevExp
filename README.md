@@ -32,18 +32,18 @@ npx revexp 'H(alp|el{2,}[o]) (Wor|wo)lds?' '??????W????'
 | Positive lookbehinds     | `(?<=abc)`                  | &#x274C; None |
 | Negative lookbehinds     | `(?<!abc)`                  | &#x274C; None |
 
-&dagger;: This syntax is accepted and invalid inputs will be rejected, but the library may not be
-able to fully narrow inputs when using patterns which include this feature.
-
 | Flag | Meaning                        | Support        |
 |------|--------------------------------|----------------|
 | `d`  | Output substring match indices | Not applicable |
 | `g`  | Global search                  | Not applicable |
 | `i`  | Case-insensitive search        | None (`false`) |
-| `m`  | Multi-line search              | None (`false`) |
+| `m`  | Multi-line search              | Partial &dagger; |
 | `s`  | `.` matches newline            | &#x2705; Full  |
 | `u`  | Unicode mode                   | None (`false`) |
 | `y`  | Sticky search                  | Not applicable |
+
+&dagger;: This syntax is accepted and invalid inputs will be rejected, but the library may not be
+able to fully narrow inputs when using patterns which include this feature.
 
 ## Usage
 

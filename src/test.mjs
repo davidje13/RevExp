@@ -48,7 +48,12 @@ const results = runTests([
 		['e', null],
 	],
 
-	['.', null, // any (no 's' flag)
+	['.', null, // any (default flags)
+		['a', 'a'],
+		['\n', null],
+	],
+
+	['.', '', // any (no 's' flag)
 		['a', 'a'],
 		['\n', null],
 	],
@@ -99,6 +104,35 @@ const results = runTests([
 
 	['a$b', null,
 		['??', null],
+	],
+
+	['.*^a$.*', 's', // anchors (no 'm' flag)
+		['a', 'a'],
+		['\na', null],
+		['a\n', null],
+		['?', 'a'],
+		['??', null],
+	],
+
+	['.*^a$.*', 'ms', // anchors (with 'm' flag)
+		['a', 'a'],
+		['\na', '\\na'],
+		['a\n', 'a\\n'],
+		['\na\n', '\\na\\n'],
+		['?\n', 'a\\n'],
+		['\n?', '\\na'],
+		['?', 'a'],
+		['?b', null],
+		['b?', null],
+		//['a?', 'a[\\r\\n\\u2028\\u2029]'], // TODO
+		//['?a', '[\\r\\n\\u2028\\u2029]a'], // TODO
+		//['??', '[\\r\\na\\u2028\\u2029][\\r\\na\\u2028\\u2029]'], // TODO
+	],
+
+	['\\n^a$\\n', 'm',
+		['a', null],
+		['\na\n', '\\na\\n'],
+		//['???', '\\na\\n'], // TODO
 	],
 
 	['x(^|y)z*', null,
@@ -350,7 +384,7 @@ function runTests(patterns, out) {
 
 	patterns.forEach(([pattern, flags, ...tests]) => {
 		const expectedError = (tests.length === 1 && typeof tests[0] === 'string') ? tests[0] : null;
-		out.write(`- ${pattern}\n`);
+		out.write(`- ${pattern}  ${flags ?? ''}\n`);
 		let revexp;
 		try {
 			revexp = RevExp.compile(pattern, flags);
