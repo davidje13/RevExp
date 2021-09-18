@@ -44,11 +44,16 @@ const ESC = new Map([
 		return CharacterClass.ofCode(readHex(code));
 	}],
 	['\\', CharacterClass.of('\\')],
-	['k', (cs) => {
+	['k', (cs, context) => {
 		if (!cs.check('<')) {
 			throw new Error('Incomplete named backreference');
 		}
-		return new BackReference(cs.readUntil('>', true));
+		const name = cs.readUntil('>', true);
+		const ref = context.groupNames.get(name);
+		if (!ref) {
+			throw new Error(`Backreference to unknown group '${name}'`);
+		}
+		return new BackReference(ref);
 	}],
 ]);
 const CHAR_CLASS_ESC = new Map(ESC);
@@ -56,7 +61,13 @@ CHAR_CLASS_ESC.set('b', CharacterClass.of('\b'));
 CHAR_CLASS_ESC.delete('B');
 CHAR_CLASS_ESC.delete('k');
 for (let i = 1; i < 10; ++ i) {
-	ESC.set(String(i), new BackReference(i));
+	ESC.set(String(i), (cs, context) => {
+		const ref = context.groupNumbers[i - 1];
+		if (!ref) {
+			throw new Error(`Backreference to unknown group ${i}`);
+		}
+		return new BackReference(ref);
+	});
 }
 
 function resolve(lookup, cs, c, context) {
@@ -185,9 +196,17 @@ const SPECIALS = new Map([
 		}
 		const inner = postProc(tokens);
 		switch (mode.type) {
-			case 'capturing': return new CapturingGroup(mode.name, inner);
-			case 'inline': return inner;
-			default: return new Assertion(mode.type, mode.inverted, inner);
+			case 'capturing':
+				const group = new CapturingGroup(mode.name, inner);
+				context.groupNumbers.push(group);
+				if (mode.name) {
+					context.groupNames.set(mode.name, group);
+				}
+				return group;
+			case 'inline':
+				return inner;
+			default:
+				return new Assertion(mode.type, mode.inverted, inner);
 		}
 	}],
 	['{', readQuantifier],
@@ -200,6 +219,8 @@ export default function toAST(pattern, flags) {
 		any: flags.dotAll ? CharacterClass.ANY : CharacterClass.NEWLINE.inverse(),
 		begin: flags.multiline ? new Choice([new Chain([REWIND_CHAR, CharacterClass.NEWLINE]), PosAssertion.BEGIN]) : PosAssertion.BEGIN,
 		end: flags.multiline ? new Choice([new Chain([CharacterClass.NEWLINE, REWIND_CHAR]), PosAssertion.END]) : PosAssertion.END,
+		groupNumbers: [],
+		groupNames: new Map(),
 	};
 
 	const tokens = [];

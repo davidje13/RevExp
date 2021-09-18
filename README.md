@@ -25,7 +25,7 @@ npx revexp 'H(alp|el{2,}[o]) (Wor|wo)lds?' '??????W????'
 | Lazy quantifiers         | `a+?` `a*?` `a??` `a{2,}?`  | &#x2705; Full |
 | Possessive quantifiers   | `a++` `a*+` `a?+` `a{2,}+`  | &#x274C; None |
 | Groups                   | `(abc)` `(?<name>abc)`      | &#x2705; Full |
-| Backreferences           | `(abc)\1` `(?<x>abc)\k<x>`  | &#x274C; None |
+| Backreferences           | `(abc)\1` `(?<x>abc)\k<x>`  | Partial &ddagger; |
 | Non-capturing groups     | `(?:abc)`                   | &#x2705; Full |
 | Positive lookaheads      | `(?=abc)`                   | &#x274C; None |
 | Negative lookaheads      | `(?!abc)`                   | &#x274C; None |
@@ -42,8 +42,13 @@ npx revexp 'H(alp|el{2,}[o]) (Wor|wo)lds?' '??????W????'
 | `u`  | Unicode mode                   | None (`false`) |
 | `y`  | Sticky search                  | Not applicable |
 
-&dagger;: This syntax is accepted and invalid inputs will be rejected, but the library may not be
-able to fully narrow inputs when using patterns which include this feature.
+&dagger;: This syntax is accepted, any full or partial valid input will be accepted, and full
+or partial invalid inputs will be rejected, but the library may not be able to fully narrow
+inputs when using patterns which include this feature.
+
+&ddagger;: The syntax is accepted and any full or partial valid input will be accepted, but full
+or partial invalid inputs may not be rejected, and the library may not be able to fully narrow
+inputs when using patterns which include this feature.
 
 ## Usage
 

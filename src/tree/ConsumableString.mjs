@@ -35,10 +35,11 @@ export default class ConsumableString {
 				break;
 			}
 		}
+		const end = this.pos;
 		if (check && !this.check(v)) {
 			throw new Error(`Expected '${v}' after ${begin} '${this.data}'`);
 		}
-		return this.data.substring(begin, this.pos);
+		return this.data.substring(begin, end);
 	}
 
 	readInt() {

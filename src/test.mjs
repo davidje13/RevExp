@@ -306,22 +306,44 @@ const results = runTests([
 		//['??', 'ba'], // TODO
 	],
 
-	// TODO
-	//['([ab])\\1', null, // backreference
-	//	['??', '[ab][ab]'],
-	//	['aa', 'aa'],
-	//	['ab', null],
-	//	['a?', 'aa'],
-	//	['?a', 'aa'],
-	//],
+	['([ab])(c)\\1', null, // backreference
+		['???', '[ab]c[ab]'],
+		['aca', 'aca'],
+		//['acb', null], // TODO
+		//['a??', 'aca'], // TODO
+		//['??a', 'aca'], // TODO
+	],
 
-	// TODO
-	//['(?:([ab])c|xx)?\\1 *', null, // backreference to optional group
-	//	['???', '[abx][cx][ab ]'],
-	//	['?c?', '[ab]c[ab]'],
-	//	['?x?', 'xx '],
-	//	['??', 'xx'],
-	//],
+	['(?<foo>[ab])(c)\\k<foo>', null, // named backreference
+		['???', '[ab]c[ab]'],
+	],
+
+	['(?<foo>[ab])(c)\\2', null,
+		['???', '[ab]cc'],
+	],
+
+	['(a)(b)\\2\\1', null,
+		['????', 'abba'],
+		//['??', null], // TODO
+		['?????', null],
+	],
+
+	['(a)(\\1)\\2', null,
+		['???', 'aaa'],
+	],
+
+	['(.)(\\1)\\2', null,
+		//['a??', 'aaa'], // TODO
+		//['?b?', 'bbb'], // TODO
+		//['??c', 'ccc'], // TODO
+	],
+
+	['(?:([ab])c|xx)?\\1 *', null, // backreference to optional group
+		['???', '[ abx][ cx][ ab]'],
+		//['?c?', '[ab]c[ab]'], // TODO
+		//['?x?', 'xx '], // TODO
+		//['??', '[ x][ x]'], // TODO
+	],
 
 	['(a', null, 'Incomplete token'],
 	['[a', null, 'Incomplete token'],
@@ -348,6 +370,12 @@ const results = runTests([
 	['\\uXXXX', null, 'Invalid hex value \'XXXX\''],
 	['\\u{0000', null, 'Expected \'}\''],
 	['\\k<foo', null, 'Expected \'>\''],
+	['\\1', null, 'Backreference to unknown group 1'],
+	['(?:x)\\1', null, 'Backreference to unknown group 1'],
+	['(x)\\2', null, 'Backreference to unknown group 2'],
+	['\\1(x)', null, 'Backreference to unknown group 1'],
+	['(\\1)', null, 'Backreference to unknown group 1'],
+	['\\k<foo>', null, 'Backreference to unknown group \'foo\''],
 ], process.stdout);
 
 process.stdout.write(`Errors:   ${results.errors}\n`);

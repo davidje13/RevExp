@@ -50,8 +50,10 @@ export class BackReference {
 		this.ref = ref;
 	}
 
-	toGraph() {
-		throw new Error('Backreferences are not currently supported');
+	toGraph(nexts) {
+		// this is currently a very lax definition of a backreference which allows anything that would
+		// match the original pattern (or blank since the original pattern could have been skipped)
+		return [...this.ref.toGraph(nexts), ...nexts];
 	}
 }
 
