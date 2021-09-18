@@ -3,7 +3,7 @@
 import RevExp from './RevExp.mjs';
 
 const results = runTests([
-	['a', // literal
+	['a', null, // literal
 		['?', 'a'],
 		['a', 'a'],
 		['aa', null],
@@ -12,96 +12,107 @@ const results = runTests([
 		['b', null],
 	],
 
-	['ab', // chain
+	['ab', null, // chain
 		['??', 'ab'],
 	],
 
-	['(a)', // capturing group
+	['(a)', null, // capturing group
 		['?', 'a'],
 	],
 
-	['(?:a)', // non-capturing group
+	['(?:a)', null, // non-capturing group
 		['?', 'a'],
 	],
 
-	['ab(c)(?:d)(ef)', // nested chain
+	['ab(c)(?:d)(ef)', null, // nested chain
 		['??????', 'abcdef'],
 	],
 
-	['a|b', // or
+	['a|b', null, // or
 		['?', '[ab]'],
 	],
 
-	['a(b|c)(d|e|(f|g))(h)', // complex or
+	['a(b|c)(d|e|(f|g))(h)', null, // complex or
 		['????', 'a[bc][d-g]h'],
 	],
 
-	['[a-dfghi]', // character class
+	['[a-dfghi]', null, // character class
 		['?', '[a-df-i]'],
 		['b', 'b'],
 		['e', null],
 	],
 
-	['[a-cbb]', // character class with overlapping ranges
+	['[a-cbb]', null, // character class with overlapping ranges
 		['?', '[abc]'],
 		['b', 'b'],
 		['e', null],
 	],
 
-	['[]', // empty character class
-		['?', null],
+	['.', null, // any (no 's' flag)
+		['a', 'a'],
+		['\n', null],
 	],
 
-	['[^]', // any character class
+	['.', 's', // any (with 's' flag)
+		['a', 'a'],
+		['\n', '\\n'],
 		['?', '.'],
 	],
 
-	['\\d', // built-in character class
+	['[]', null, // empty character class
+		['?', null],
+	],
+
+	['[^]', null, // any character class
+		['?', '.'],
+	],
+
+	['\\d', null, // built-in character class
 		['?', '[0-9]'],
 	],
 
-	['[^a-dx]', // negated character class
+	['[^a-dx]', null, // negated character class
 		['?', '[^a-dx]'],
 		['e', 'e'],
 		['b', null],
 	],
 
-	['[a-d][^rt-vZ-W]', // complex character classes
+	['[a-d][^rt-vZ-W]', null, // complex character classes
 		['?w', '[a-d]w'],
 	],
 
-	['^ab$', // anchors
+	['^ab$', null, // anchors
 		['?', null],
 		['??', 'ab'],
 		['???', null],
 	],
 
-	['.*^ab$.*',
+	['.*^ab$.*', null,
 		['?', null],
 		['??', 'ab'],
 		['???', null],
 	],
 
-	['a^b',
+	['a^b', null,
 		['??', null],
 	],
 
-	['a$b',
+	['a$b', null,
 		['??', null],
 	],
 
-	['x(^|y)z*',
+	['x(^|y)z*', null,
 		['???', 'xyz'],
 		['xzz', null],
 	],
 
-	['(^|x)yz*',
+	['(^|x)yz*', null,
 		['???', '[xy][yz]z'],
 		['x??', 'xyz'],
 		['y??', 'yzz'],
 	],
 
-	['a[bcm]|x[myz]', // or with inference
+	['a[bcm]|x[myz]', null, // or with inference
 		['??', '[ax][bcmyz]'],
 		['a?', 'a[bcm]'],
 		['x?', 'x[myz]'],
@@ -113,35 +124,35 @@ const results = runTests([
 		['?n', null],
 	],
 
-	['a', // quantifier: 1
+	['a', null, // quantifier: 1
 		['', null],
 		['?', 'a'],
 		['??', null],
 		['???', null],
 	],
 
-	['a?', // quantifier: 0-1
+	['a?', null, // quantifier: 0-1
 		['', ''],
 		['?', 'a'],
 		['??', null],
 		['???', null],
 	],
 
-	['a*', // quantifier: 0+
+	['a*', null, // quantifier: 0+
 		['', ''],
 		['?', 'a'],
 		['??', 'aa'],
 		['???', 'aaa'],
 	],
 
-	['a+', // quantifier: 1+
+	['a+', null, // quantifier: 1+
 		['', null],
 		['?', 'a'],
 		['??', 'aa'],
 		['???', 'aaa'],
 	],
 
-	['a{2,4}', // quantifier: 2-4
+	['a{2,4}', null, // quantifier: 2-4
 		['', null],
 		['?', null],
 		['??', 'aa'],
@@ -150,35 +161,35 @@ const results = runTests([
 		['?????', null],
 	],
 
-	['a{2}', // quantifier: 2
+	['a{2}', null, // quantifier: 2
 		['', null],
 		['?', null],
 		['??', 'aa'],
 		['???', null],
 	],
 
-	['a{0,2}', // quantifier: 0-2
+	['a{0,2}', null, // quantifier: 0-2
 		['', ''],
 		['?', 'a'],
 		['??', 'aa'],
 		['???', null],
 	],
 
-	['a{2,}', // quantifier: 2+
+	['a{2,}', null, // quantifier: 2+
 		['', null],
 		['?', null],
 		['??', 'aa'],
 		['???', 'aaa'],
 	],
 
-	['abc?', // optional
+	['abc?', null, // optional
 		['?', null],
 		['??', 'ab'],
 		['???', 'abc'],
 		['????', null],
 	],
 
-	[' *a{6} +a{3} *', // complex quantifier (encoded nonogram rule)
+	[' *a{6} +a{3} *', null, // complex quantifier (encoded nonogram rule)
 		['?????????', null],
 		['??????????', 'aaaaaa aaa'],
 		['???????????', '[ a]aaaaa[ a][ a]aa[ a]'],
@@ -190,41 +201,41 @@ const results = runTests([
 		['??????a??? ?????', ' [ a][ a][ a]aaa[ a][ a][ a] [ a][ a]a[ a][ a]'],
 	],
 
-	['[^a]*a{6}[^a]+a{3}[^a]*', // range recombination
+	['[^a]*a{6}[^a]+a{3}[^a]*', null, // range recombination
 		['???????????', '.aaaaa..aa.'],
 	],
 
-	['a*b*', // greedy quantifier
+	['a*b*', null, // greedy quantifier
 		['???', '[ab][ab][ab]'],
 	],
 
-	['a*?b*', // lazy quantifier
+	['a*?b*', null, // lazy quantifier
 		['???', '[ab][ab][ab]'],
 	],
 
-	['\\u0020\\u004a\\u004A', // unicode escape
+	['\\u0020\\u004a\\u004A', null, // unicode escape
 		['???', ' JJ'],
 	],
 
-	['[\\u0020\\u004a\\u004A]', // character class unicode escape
+	['[\\u0020\\u004a\\u004A]', null, // character class unicode escape
 		['?', '[ J]'],
 	],
 
-	['(\\d|\\u0020)*(x+y?z)+', // complex character class combinations
+	['(\\d|\\u0020)*(x+y?z)+', null, // complex character class combinations
 		['?????', '[ 0-9x][ 0-9xyz][ 0-9xz][xy]z'],
 	],
 
-	[/a\.\n/, // escaped literals
-		['???', 'a\\u002e\\u000a'],
+	[/a\.\n/, null, // escaped literals
+		['???', 'a\\.\\n'],
 	],
 
-	['(^)*(a|)*($)*', // stress test (infinite motionless repetition)
+	['(^)*(a|)*($)*', null, // stress test (infinite motionless repetition)
 		['', ''],
 		['?', 'a'],
 		['???', 'aaa'],
 	],
 
-	['(a*)+b', // stress test (catastrophic backtracking)
+	['(a*)+b', null, // stress test (catastrophic backtracking)
 		['???', 'aab'],
 		['??c', null],
 		['aac', null],
@@ -233,28 +244,28 @@ const results = runTests([
 		['aaaaaaaaaaaaaaaaaaaaaaaaaaaaac', null],
 	],
 
-	['a\\b[b&]', // word boundary
+	['a\\b[b&]', null, // word boundary
 		['a&', 'a&'],
 		['ab', null],
 		//['a?', 'a&'], // TODO
 		//['??', 'a&'], // TODO
 	],
 
-	['[b&]\\ba', // word boundary reverse
+	['[b&]\\ba', null, // word boundary reverse
 		['&a', '&a'],
 		['ba', null],
 		//['?a', '&a'], // TODO
 		//['??', '&a'], // TODO
 	],
 
-	['a\\B[b&]', // word non-boundary
+	['a\\B[b&]', null, // word non-boundary
 		['ab', 'ab'],
 		['a&', null],
 		//['a?', 'ab'], // TODO
 		//['??', 'ab'], // TODO
 	],
 
-	['[b&]\\Ba', // word non-boundary reverse
+	['[b&]\\Ba', null, // word non-boundary reverse
 		['ba', 'ba'],
 		['&a', null],
 		//['?a', 'ba'], // TODO
@@ -262,7 +273,7 @@ const results = runTests([
 	],
 
 	// TODO
-	//['([ab])\\1', // backreference
+	//['([ab])\\1', null, // backreference
 	//	['??', '[ab][ab]'],
 	//	['aa', 'aa'],
 	//	['ab', null],
@@ -271,38 +282,38 @@ const results = runTests([
 	//],
 
 	// TODO
-	//['(?:([ab])c|xx)?\\1 *', // backreference to optional group
+	//['(?:([ab])c|xx)?\\1 *', null, // backreference to optional group
 	//	['???', '[abx][cx][ab ]'],
 	//	['?c?', '[ab]c[ab]'],
 	//	['?x?', 'xx '],
 	//	['??', 'xx'],
 	//],
 
-	['(a', 'Incomplete token'],
-	['[a', 'Incomplete token'],
-	['[a-]', 'Incomplete character range'],
-	['[a-b-c]', 'Cannot create range using existing ranges'],
-	['a{}', 'Invalid character in quantifier'],
-	['a{', 'Invalid character in quantifier'],
-	['a{1', 'Invalid character in quantifier'],
-	['a{1,', 'Invalid character in quantifier'],
-	['a{1,2', 'Invalid character in quantifier'],
-	['a{,}', 'Invalid character in quantifier'],
-	['a{,1}', 'Invalid character in quantifier'],
-	['a{1,,}', 'Invalid character in quantifier'],
-	['a{1,2,}', 'Invalid character in quantifier'],
-	['a{2,1}', 'Invalid quantifier range'],
-	['a{a}', 'Invalid character in quantifier'],
-	['a{1a}', 'Invalid character in quantifier'],
-	['a**', 'Invalid quantifier target'],
-	['(?:a*)*', 'Invalid quantifier target'], // maybe this should be allowed? it is allowed by RegExp, but is functionally the same as a**
-	['(?nope)', 'Invalid group flags'],
-	['\\', 'Incomplete token'],
-	['\\u', 'Incomplete token'],
-	['\\u000', 'Incomplete token'],
-	['\\uXXXX', 'Invalid hex value \'XXXX\''],
-	['\\u{0000', 'Expected \'}\''],
-	['\\k<foo', 'Expected \'>\''],
+	['(a', null, 'Incomplete token'],
+	['[a', null, 'Incomplete token'],
+	['[a-]', null, 'Incomplete character range'],
+	['[a-b-c]', null, 'Cannot create range using existing ranges'],
+	['a{}', null, 'Invalid character in quantifier'],
+	['a{', null, 'Invalid character in quantifier'],
+	['a{1', null, 'Invalid character in quantifier'],
+	['a{1,', null, 'Invalid character in quantifier'],
+	['a{1,2', null, 'Invalid character in quantifier'],
+	['a{,}', null, 'Invalid character in quantifier'],
+	['a{,1}', null, 'Invalid character in quantifier'],
+	['a{1,,}', null, 'Invalid character in quantifier'],
+	['a{1,2,}', null, 'Invalid character in quantifier'],
+	['a{2,1}', null, 'Invalid quantifier range'],
+	['a{a}', null, 'Invalid character in quantifier'],
+	['a{1a}', null, 'Invalid character in quantifier'],
+	['a**', null, 'Invalid quantifier target'],
+	['(?:a*)*', null, 'Invalid quantifier target'], // maybe this should be allowed? it is allowed by RegExp, but is functionally the same as a**
+	['(?nope)', null, 'Invalid group flags'],
+	['\\', null, 'Incomplete token'],
+	['\\u', null, 'Incomplete token'],
+	['\\u000', null, 'Incomplete token'],
+	['\\uXXXX', null, 'Invalid hex value \'XXXX\''],
+	['\\u{0000', null, 'Expected \'}\''],
+	['\\k<foo', null, 'Expected \'>\''],
 ], process.stdout);
 
 process.stdout.write(`Errors:   ${results.errors}\n`);
@@ -337,12 +348,12 @@ function runTests(patterns, out) {
 
 	const beginTime = Date.now();
 
-	patterns.forEach(([pattern, ...tests]) => {
+	patterns.forEach(([pattern, flags, ...tests]) => {
 		const expectedError = (tests.length === 1 && typeof tests[0] === 'string') ? tests[0] : null;
 		out.write(`- ${pattern}\n`);
 		let revexp;
 		try {
-			revexp = RevExp.compile(pattern);
+			revexp = RevExp.compile(pattern, flags);
 		} catch (e) {
 			if (expectedError) {
 				if (e.message.includes(expectedError)) {

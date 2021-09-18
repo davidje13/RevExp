@@ -14,7 +14,8 @@ declare namespace RevExp {
 		public static readonly ANY: CharacterClass;
 		public static readonly NONE: CharacterClass;
 		public static readonly NUMERIC: CharacterClass;
-		public static readonly ALPHA_NUMERIC: CharacterClass;
+		public static readonly WORD: CharacterClass;
+		public static readonly NEWLINE: CharacterClass;
 		public static readonly SPACE: CharacterClass;
 
 		public static of(chars: string | string[]): CharacterClass;
@@ -49,7 +50,7 @@ declare class RevExp {
 	public readonly sticky: boolean;
 	public readonly unicode: boolean;
 
-	public static compile(pattern: string): RevExp;
+	public static compile(pattern: string, flags?: string | null | undefined): RevExp;
 
 	public static string(
 		value: string | string[] | RevExp.CharacterClass[],

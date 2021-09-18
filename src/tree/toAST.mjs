@@ -24,8 +24,8 @@ const readHex = (v) => {
 const ESC = new Map([
 	['d', CharacterClass.NUMERIC],
 	['D', CharacterClass.NUMERIC.inverse()],
-	['w', CharacterClass.ALPHA_NUMERIC],
-	['W', CharacterClass.ALPHA_NUMERIC.inverse()],
+	['w', CharacterClass.WORD],
+	['W', CharacterClass.WORD.inverse()],
 	['s', CharacterClass.SPACE],
 	['S', CharacterClass.SPACE.inverse()],
 	['t', CharacterClass.of('\t')],
@@ -33,8 +33,8 @@ const ESC = new Map([
 	['n', CharacterClass.of('\n')],
 	['v', CharacterClass.of('\v')],
 	['f', CharacterClass.of('\f')],
-	['b', new BoundaryAssertion(CharacterClass.ALPHA_NUMERIC, false)],
-	['B', new BoundaryAssertion(CharacterClass.ALPHA_NUMERIC, true)],
+	['b', new BoundaryAssertion(CharacterClass.WORD, false)],
+	['B', new BoundaryAssertion(CharacterClass.WORD, true)],
 	['0', CharacterClass.of('\u0000')],
 	['c', (cs) => CharacterClass.ofCode(1 + cs.get(1).charCodeAt(0) - CHAR_A)],
 	['x', (cs) => CharacterClass.ofCode(readHex(cs.get(2)))],
@@ -58,9 +58,9 @@ for (let i = 1; i < 10; ++ i) {
 	ESC.set(String(i), new BackReference(i));
 }
 
-function resolve(lookup, cs, c) {
+function resolve(lookup, cs, c, context) {
 	const v = lookup.get(c) ?? CharacterClass.of(c);
-	return (typeof v === 'function') ? v(cs) : v;
+	return (typeof v === 'function') ? v(cs, context) : v;
 }
 
 const readQuantifierMode = (cs) => {
@@ -83,7 +83,7 @@ const readQuantifier = (cs) => {
 	return new Quantifier(min, max, readQuantifierMode(cs));
 };
 
-const readCharacterClass = (cs) => {
+const readCharacterClass = (cs, context) => {
 	const invert = cs.check('^');
 	const parts = [];
 	let nextRange = false;
@@ -91,7 +91,9 @@ const readCharacterClass = (cs) => {
 		if (c === '-' && parts.length > 0) {
 			nextRange = true;
 		} else {
-			let part = (c === '\\') ? resolve(CHAR_CLASS_ESC, cs, cs.get()) : CharacterClass.of(c);
+			let part = (c === '\\')
+				? resolve(CHAR_CLASS_ESC, cs, cs.get(), context)
+				: CharacterClass.of(c);
 			if (nextRange) {
 				nextRange = false;
 				part = parts.pop().rangeTo(part);
@@ -166,19 +168,19 @@ function postProc(tokens) {
 }
 
 const SPECIALS = new Map([
-	['\\', (cs) => resolve(ESC, cs, cs.get())],
+	['\\', (cs, context) => resolve(ESC, cs, cs.get(), context)],
 	['^', new PosAssertion(0)],
 	['$', new PosAssertion(-1)],
 	['|', OR],
-	['.', CharacterClass.ANY],
+	['.', (cs, context) => context.any],
 	['?', (cs) => new Quantifier(0, 1, readQuantifierMode(cs))],
 	['+', (cs) => new Quantifier(1, null, readQuantifierMode(cs))],
 	['*', (cs) => new Quantifier(0, null, readQuantifierMode(cs))],
-	['(', (cs) => {
+	['(', (cs, context) => {
 		const mode = getGroupMode(cs);
 		const tokens = [];
 		for (let c; (c = cs.get()) !== ')';) {
-			tokens.push(resolve(SPECIALS, cs, c));
+			tokens.push(resolve(SPECIALS, cs, c, context));
 		}
 		const inner = postProc(tokens);
 		switch (mode.type) {
@@ -191,10 +193,15 @@ const SPECIALS = new Map([
 	['[', readCharacterClass],
 ]);
 
-export default function toAST(pattern) {
+export default function toAST(pattern, flags) {
+	const context = {
+		flags,
+		any: flags.dotAll ? CharacterClass.ANY : CharacterClass.NEWLINE.inverse(),
+	};
+
 	const tokens = [];
 	for (const cs = new ConsumableString(pattern); !cs.end();) {
-		tokens.push(resolve(SPECIALS, cs, cs.get()));
+		tokens.push(resolve(SPECIALS, cs, cs.get(), context));
 	}
 	return postProc(tokens);
 }

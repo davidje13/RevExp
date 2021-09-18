@@ -2,9 +2,48 @@
 
 This library calculates the possible inputs for a given regular expression.
 
-It currently supports all `RegExp` features except lookaheads, lookbehinds, backreferences,
-flags, and unicode character classes. Word boundaries (`\b` / `\B`) are partially supported
-(may not be fully resolved).
+The supported syntax is modelled on the standard Javascript `RegExp` object's syntax.
+
+You can [try it online](https://regex.davidje13.com/) or in the terminal:
+
+```bash
+npx revexp 'H(alp|el{2,}[o]) (Wor|wo)lds?' '??????W????'
+```
+
+## Supported Features
+
+| Pattern Feature          | Examples                    | Support       |
+|--------------------------|-----------------------------|---------------|
+| Character classes        | `a` `[aeiou]` `[^a-z]` `\d` | &#x2705; Full |
+| Character escapes        | `\u0020` `\\` `\n` `\(`     | &#x2705; Full |
+| Unicode property escapes | `\p{Letter}`                | &#x274C; None |
+| Branching                | `x\|y`                      | &#x2705; Full |
+| Anchors                  | `^` `$`                     | &#x2705; Full |
+| Word boundary assertions | `\b` `\B`                   | Partial &dagger; |
+| Standard quantifiers     | `a*` `a+` `a?`              | &#x2705; Full |
+| Range quantifiers        | `a{2}` `a{2,}` `a{2,3}`     | &#x2705; Full |
+| Lazy quantifiers         | `a+?` `a*?` `a??` `a{2,}?`  | &#x2705; Full |
+| Possessive quantifiers   | `a++` `a*+` `a?+` `a{2,}+`  | &#x274C; None |
+| Groups                   | `(abc)` `(?<name>abc)`      | &#x2705; Full |
+| Backreferences           | `(abc)\1` `(?<x>abc)\k<x>`  | &#x274C; None |
+| Non-capturing groups     | `(?:abc)`                   | &#x2705; Full |
+| Positive lookaheads      | `(?=abc)`                   | &#x274C; None |
+| Negative lookaheads      | `(?!abc)`                   | &#x274C; None |
+| Positive lookbehinds     | `(?<=abc)`                  | &#x274C; None |
+| Negative lookbehinds     | `(?<!abc)`                  | &#x274C; None |
+
+&dagger;: This syntax is accepted and invalid inputs will be rejected, but the library may not be
+able to fully narrow inputs when using patterns which include this feature.
+
+| Flag | Meaning                        | Support        |
+|------|--------------------------------|----------------|
+| `d`  | Output substring match indices | Not applicable |
+| `g`  | Global search                  | Not applicable |
+| `i`  | Case-insensitive search        | None (`false`) |
+| `m`  | Multi-line search              | None (`false`) |
+| `s`  | `.` matches newline            | &#x2705; Full  |
+| `u`  | Unicode mode                   | None (`false`) |
+| `y`  | Sticky search                  | Not applicable |
 
 ## Usage
 
@@ -53,6 +92,12 @@ npx revexp -u'.' 'a[bc]|x[yz]' '.c'
 | `(a[bc]d\|e(f\|gh))` | `???`      | `[ae][bcg][dh]`        |
 | `(a[bc]d\|e(f\|gh))` | `?g?`      | `egh`                  |
 | ` *a{4} +a{2} *`     | `????????` | `[ a]aaa[ a][ a]a[ a]` |
+
+## Performance and Security Considerations
+
+Matching is performed using an algorithm which executes in linear time on the size of the input
+for a given pattern. This means it is not vulnerable to catastrophic backtracking (but note that
+untrusted patterns can take arbitrarily long to compile and use an unbounded amount of memory).
 
 ## API
 
@@ -120,7 +165,7 @@ const input = [
   RevExp.CharacterClass.of('o'),
   RevExp.CharacterClass.of('o'),
   RevExp.CharacterClass.of('bz'), // 'b' or 'z'
-  RevExp.CharacterClass.ALPHA_NUMERIC, // a-zA-Z0-9_
+  RevExp.CharacterClass.WORD, // a-zA-Z0-9_
   RevExp.CharacterClass.ANY, // anything
 ];
 // input is equivalent to a pattern of 'foo[bz]\w.'
@@ -180,11 +225,12 @@ The `CharacterClass` object is immutable.
 #### constants
 
 ```javascript
-RevExp.CharacterClass.ANY           // .
-RevExp.CharacterClass.NONE          // [^]
-RevExp.CharacterClass.NUMERIC       // [0-9]
-RevExp.CharacterClass.ALPHA_NUMERIC // [a-zA-Z0-9_]
-RevExp.CharacterClass.SPACE         // various unicode space characters
+RevExp.CharacterClass.ANY     // .
+RevExp.CharacterClass.NONE    // [^]
+RevExp.CharacterClass.NUMERIC // [0-9]
+RevExp.CharacterClass.WORD    // [a-zA-Z0-9_]
+RevExp.CharacterClass.NEWLINE // various unicode newline characters
+RevExp.CharacterClass.SPACE   // various unicode space characters
 ```
 
 #### constructor

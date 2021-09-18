@@ -18,6 +18,17 @@ function check(positions, pos, rule) {
 	return true;
 }
 
+function parseFlags(flags) {
+	return {
+		dotAll: flags.includes('s'),
+		global: flags.includes('g'),
+		hasIndices: flags.includes('d'),
+		ignoreCase: flags.includes('i'),
+		sticky: flags.includes('y'),
+		unicode: flags.includes('u'),
+	};
+}
+
 export default class RevExp {
 	constructor(pattern, flags = null) {
 		if (pattern instanceof RegExp || pattern instanceof RevExp) {
@@ -27,14 +38,10 @@ export default class RevExp {
 			this.source = String(pattern);
 			this.flags = flags ?? '';
 		}
-		this.dotAll = this.flags.includes('s'); // todo (currently assumes true)
-		this.global = this.flags.includes('g'); // irrelevant
-		this.hasIndices = this.flags.includes('d'); // irrelevant
-		this.ignoreCase = this.flags.includes('i'); // todo (currently assumes false)
-		this.sticky = this.flags.includes('y'); // irrelevant
-		this.unicode = this.flags.includes('u'); // todo (currently assumes false)
+		const parsedFlags = parseFlags(this.flags);
+		Object.assign(this, parsedFlags);
 
-		const ast = toAST(this.source);
+		const ast = toAST(this.source, parsedFlags);
 		this.endNode = { nexts: [] };
 		this.beginNodes = ast.toGraph([this.endNode]);
 	}
@@ -122,6 +129,6 @@ export default class RevExp {
 	}
 }
 
-RevExp.compile = (p) => new RevExp(p);
+RevExp.compile = (pattern, flags) => new RevExp(pattern, flags);
 RevExp.CharacterClass = CharacterClass;
 RevExp.string = CharacterClassString;

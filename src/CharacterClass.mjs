@@ -1,4 +1,27 @@
-const escapeSpecial = (special, v) => v.replace(special, (x) => `\\u${x.charCodeAt(0).toString(16).padStart(4, '0')}`);
+const simpleEscapes = new Map([
+	['\t', '\\t'],
+	['\r', '\\r'],
+	['\n', '\\n'],
+	['\v', '\\v'],
+	['\f', '\\f'],
+	['\\', '\\\\'],
+	['-', '\\-'],
+	['.', '\\.'],
+	['(', '\\('],
+	[')', '\\)'],
+	['[', '\\['],
+	[']', '\\]'],
+	['{', '\\{'],
+	['}', '\\}'],
+	['|', '\\|'],
+	['^', '\\^'],
+	['$', '\\$'],
+	['?', '\\?'],
+	['+', '\\+'],
+	['*', '\\*'],
+]);
+const doEscape = (x) => (simpleEscapes.get(x) ?? `\\u${x.charCodeAt(0).toString(16).padStart(4, '0')}`);
+const escapeSpecial = (special, v) => v.replace(special, doEscape);
 const escapeSpecialRegular = escapeSpecial.bind(null, /[^-a-zA-Z0-9 ,:;'"!@%&_=<>`~]/g);
 const escapeSpecialCharRange = escapeSpecial.bind(null, /[^a-zA-Z0-9 ,:;'"!@%&_=<>`~(){}.?+*$]/g);
 const printChars = (chars) => {
@@ -178,12 +201,13 @@ CharacterClass.range = (a, b) => {
 CharacterClass.union = (...r) => r.reduce((a, b) => a.union(b), CharacterClass.NONE);
 
 CharacterClass.NUMERIC = CharacterClass.range('0', '9');
-CharacterClass.ALPHA_NUMERIC = CharacterClass.union(
+CharacterClass.WORD = CharacterClass.union(
 	CharacterClass.range('a', 'z'),
 	CharacterClass.range('A', 'Z'),
 	CharacterClass.NUMERIC,
 	CharacterClass.of('_'),
 );
+CharacterClass.NEWLINE = CharacterClass.of(['\n', '\r', '\u2028', '\u2029']);
 CharacterClass.SPACE = CharacterClass.of([
 	' ', '\f', '\n', '\r', '\t', '\v',
 	'\u00a0', '\u1680', '\u2028', '\u2029', '\u202F', '\u205F', '\u3000', '\uFEFF',
