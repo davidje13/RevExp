@@ -94,7 +94,7 @@ export default class CharacterClass {
 	}
 
 	intersects(other) {
-		if (this.inverted && other.inverted) {
+		if (this === other || this.inverted && other.inverted) {
 			return true;
 		}
 		if (!this.inverted) {
@@ -110,6 +110,9 @@ export default class CharacterClass {
 	}
 
 	intersect(other) {
+		if (this === other) {
+			return this;
+		}
 		if (!this.inverted) {
 			if (!other.chars.length) {
 				return other.inverted ? this : other;
@@ -133,6 +136,9 @@ export default class CharacterClass {
 	}
 
 	union(other) {
+		if (this === other) {
+			return this;
+		}
 		if (this.inverted) {
 			if (!other.chars.length) {
 				return other.inverted ? other : this;

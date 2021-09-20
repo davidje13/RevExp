@@ -122,15 +122,19 @@ export default (out) => runTests([
 		['?', 'a'],
 		['?b', null],
 		['b?', null],
-		//['a?', 'a[\\r\\n\\u2028\\u2029]'], // TODO
-		//['?a', '[\\r\\n\\u2028\\u2029]a'], // TODO
-		//['??', '[\\r\\na\\u2028\\u2029][\\r\\na\\u2028\\u2029]'], // TODO
+		['a?', 'a[\\n\\r\\u2028\\u2029]'],
+		['?a', '[\\n\\r\\u2028\\u2029]a'],
+		['??', '[\\n\\ra\\u2028\\u2029][\\n\\ra\\u2028\\u2029]'],
+	],
+
+	['.^a$.', 'ms',
+		['???', '[\\n\\r\\u2028\\u2029]a[\\n\\r\\u2028\\u2029]'],
 	],
 
 	['\\n^a$\\n', 'm',
 		['a', null],
 		['\na\n', '\\na\\n'],
-		//['???', '\\na\\n'], // TODO
+		['???', '\\na\\n'],
 	],
 
 	['x(^|y)z*', null,
@@ -279,29 +283,29 @@ export default (out) => runTests([
 	['a\\b[b&]', null, // word boundary
 		['a&', 'a&'],
 		['ab', null],
-		//['a?', 'a&'], // TODO
+		['a?', 'a&'],
 		//['??', 'a&'], // TODO
 	],
 
 	['[b&]\\ba', null, // word boundary reverse
 		['&a', '&a'],
 		['ba', null],
-		//['?a', '&a'], // TODO
-		//['??', '&a'], // TODO
+		['?a', '&a'],
+		['??', '&a'],
 	],
 
 	['a\\B[b&]', null, // word non-boundary
 		['ab', 'ab'],
 		['a&', null],
-		//['a?', 'ab'], // TODO
+		['a?', 'ab'],
 		//['??', 'ab'], // TODO
 	],
 
 	['[b&]\\Ba', null, // word non-boundary reverse
 		['ba', 'ba'],
 		['&a', null],
-		//['?a', 'ba'], // TODO
-		//['??', 'ba'], // TODO
+		['?a', 'ba'],
+		['??', 'ba'],
 	],
 
 	['([ab])(c)\\1', null, // backreference

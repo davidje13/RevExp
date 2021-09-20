@@ -32,23 +32,22 @@ npx revexp 'H(alp|el{2,}[o]) (Wor|wo)lds?' '??????W????'
 | Positive lookbehinds     | `(?<=abc)`                  | &#x274C; None |
 | Negative lookbehinds     | `(?<!abc)`                  | &#x274C; None |
 
+&dagger;: Two passes may be required to fully narrow an input when using this feature.
+
+&ddagger;: Backreferences are currently handled as if the group were repeated (with an optional
+qualifier), meaning the syntax is accepted and any full or partial valid input will be accepted,
+but full or partial invalid inputs may not be rejected, and the library may not be able to fully
+narrow inputs when using patterns which include this feature.
+
 | Flag | Meaning                        | Support        |
 |------|--------------------------------|----------------|
 | `d`  | Output substring match indices | Not applicable |
 | `g`  | Global search                  | Not applicable |
 | `i`  | Case-insensitive search        | None (`false`) |
-| `m`  | Multi-line search              | Partial &dagger; |
+| `m`  | Multi-line search              | &#x2705; Full  |
 | `s`  | `.` matches newline            | &#x2705; Full  |
 | `u`  | Unicode mode                   | None (`false`) |
 | `y`  | Sticky search                  | Not applicable |
-
-&dagger;: This syntax is accepted, any full or partial valid input will be accepted, and full
-or partial invalid inputs will be rejected, but the library may not be able to fully narrow
-inputs when using patterns which include this feature.
-
-&ddagger;: The syntax is accepted and any full or partial valid input will be accepted, but full
-or partial invalid inputs may not be rejected, and the library may not be able to fully narrow
-inputs when using patterns which include this feature.
 
 ## Usage
 
@@ -100,7 +99,7 @@ npx revexp -u'.' 'a[bc]|x[yz]' '.c'
 
 ## Performance and Security Considerations
 
-Matching is performed using an algorithm which executes in linear time on the size of the input
+Matching is performed using an algorithm which executes in polynomial time on the size of the input
 for a given pattern. This means it is not vulnerable to catastrophic backtracking (but note that
 untrusted patterns can take arbitrarily long to compile and use an unbounded amount of memory).
 

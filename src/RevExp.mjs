@@ -30,6 +30,23 @@ function parseFlags(flags) {
 	};
 }
 
+function reduceGraph(begin, fn, initial = null) {
+	const visited = new Set();
+	const active = [begin];
+	let v = initial;
+	while (active.length) {
+		const a = active.pop();
+		v = fn(a, v);
+		for (const next of a.nexts) {
+			if (!visited.has(next)) {
+				active.push(next);
+				visited.add(next);
+			}
+		}
+	}
+	return v;
+}
+
 export default class RevExp {
 	constructor(pattern, flags = null) {
 		if (pattern instanceof RegExp || pattern instanceof RevExp) {
@@ -45,6 +62,8 @@ export default class RevExp {
 		const ast = toAST(this.source, parsedFlags);
 		this.endNode = { nexts: [] };
 		this.beginNodes = ast.toGraph([this.endNode]);
+		this.graphContainsLoops = true; // TODO: check if graph contains loops
+		this.graphContainsOverwrites = reduceGraph({ nexts: this.beginNodes }, (n, v) => (v || n.advance < 0), false);
 	}
 
 	reverse(value, unknown = null) {
@@ -52,21 +71,24 @@ export default class RevExp {
 		const length = inputCharsString.length;
 
 		// add virtual "end state" position
-		inputCharsString.push(CharacterClass.NONE);
-
-		const positions = inputCharsString.map((chars) => ({
+		const positions = [...inputCharsString, CharacterClass.NONE].map((chars) => ({
 			inputChars: chars,
 			states: new Map(),
-			resolved: CharacterClass.NONE,
 		}));
 
-		let active = [{
+		const checkLoops = this.graphContainsLoops && this.graphContainsOverwrites;
+		const beginState = {
 			pos: -1,
 			prevs: [],
 			nexts: this.beginNodes,
 			nextPos: 0,
 			node: null,
-		}];
+			remaining: 0,
+			history: checkLoops ? new Set() : null,
+			solution: null,
+		};
+		// breadth-first so that we avoid loops if found
+		let active = [beginState];
 		while (active.length) {
 			const nextActive = [];
 			for (const a of active) {
@@ -78,7 +100,14 @@ export default class RevExp {
 				for (const n of a.nexts) {
 					const existingState = states.get(n);
 					if (existingState) {
-						existingState.prevs.push(a);
+						if (!checkLoops) {
+							existingState.prevs.push(a);
+						} else if (!a.history.has(existingState)) { // avoid loops in result
+							existingState.prevs.push(a);
+							for (const hist of a.history) {
+								existingState.history.add(hist);
+							}
+						}
 					} else if (check(positions, pos, n)) {
 						const state = {
 							pos,
@@ -86,7 +115,11 @@ export default class RevExp {
 							nexts: n.nexts,
 							nextPos: pos + (n.advance ?? 0),
 							node: n,
+							remaining: 0,
+							history: checkLoops ? new Set(a.history) : null,
+							solution: null,
 						};
+						state.history?.add(state);
 						states.set(n, state);
 						nextActive.push(state);
 					}
@@ -100,25 +133,68 @@ export default class RevExp {
 			return null;
 		}
 
-		active = [endState];
-		while (active.length) {
-			const nextActive = [];
-			for (const a of active) {
-				if (!a.node) {
-					continue;
+		if (!this.graphContainsOverwrites) {
+			const solution = inputCharsString.map(() => CharacterClass.NONE);
+
+			active = [endState];
+			while (active.length) {
+				const a = active.pop();
+				if (a.node?.chars) {
+					solution[a.pos] = solution[a.pos].union(a.node.chars);
 				}
-				const p = positions[a.pos];
-				if (a.node.chars) {
-					p.resolved = p.resolved.union(a.node.chars);
+				for (const prev of a.prevs) {
+					if ((++prev.remaining) === 1) {
+						active.push(prev);
+					}
 				}
-				nextActive.push(...a.prevs);
-				a.node = null;
 			}
-			active = nextActive;
+
+			return CharacterClassString(solution.map((p, i) => (inputCharsString[i].intersect(p))));
 		}
 
-		positions.pop(); // remove trailing end-of-input
-		return CharacterClassString(positions.map((p) => (p.inputChars.intersect(p.resolved))));
+		active = [endState];
+		while (active.length) {
+			const a = active.pop();
+			for (const prev of a.prevs) {
+				if ((++prev.remaining) === 1) {
+					active.push(prev);
+				}
+			}
+		}
+
+		endState.solution = inputCharsString;
+		active = [endState];
+		while (active.length) {
+			const a = active.pop();
+			if (a.solution && a.node?.chars) {
+				const combined = a.solution[a.pos].intersect(a.node.chars);
+				if (combined.isEmpty()) {
+					a.solution = null;
+				} else {
+					a.solution[a.pos] = combined;
+				}
+			}
+			for (const prev of a.prevs) {
+				if (a.solution) {
+					if (!prev.solution) {
+						prev.solution = [...a.solution];
+					} else {
+						for (let i = 0; i < inputCharsString.length; ++i) {
+							prev.solution[i] = prev.solution[i].union(a.solution[i]);
+						}
+					}
+				}
+				if ((--prev.remaining) === 0) {
+					active.push(prev);
+				}
+			}
+		}
+
+		if (!beginState.solution) {
+			return null;
+		}
+
+		return CharacterClassString(beginState.solution);
 	}
 
 	test(value, unknown = null) {
