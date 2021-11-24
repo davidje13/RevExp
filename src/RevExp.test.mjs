@@ -1,6 +1,6 @@
 import RevExp from './RevExp.mjs';
 
-export default (out) => runTests([
+const CASES = [
 	['a', null, // literal
 		['?', 'a'],
 		['a', 'a'],
@@ -378,63 +378,24 @@ export default (out) => runTests([
 	['\\1(x)', null, 'Backreference to unknown group 1'],
 	['(\\1)', null, 'Backreference to unknown group 1'],
 	['\\k<foo>', null, 'Backreference to unknown group \'foo\''],
-], out);
+];
 
-function runTests(patterns, { writer, red, green }) {
-	writer.write('RevExp\n');
-
-	let errors = 0;
-	let failures = 0;
-
-	const pass = green('[PASS]');
-	const fail = red('[FAIL]');
-	const indent = '  ';
-	const indentCont = '         ';
-
-	patterns.forEach(([pattern, flags, ...tests]) => {
+describe('RevExp', () => {
+	CASES.forEach(([pattern, flags, ...tests]) => describe(`${pattern}  ${flags ?? ''}`, () => {
 		const expectedError = (tests.length === 1 && typeof tests[0] === 'string') ? tests[0] : null;
-		writer.write(`- ${pattern}  ${flags ?? ''}\n`);
-		let revexp;
-		try {
-			revexp = RevExp.compile(pattern, flags);
-		} catch (e) {
-			if (expectedError) {
-				if (e.message.includes(expectedError)) {
-					writer.write(`${indent}${pass} matched expected compilation error\n\n`);
-				} else {
-					writer.write(`${indent}${fail} unexpected compilation error\n${indentCont}${e}\n${indentCont}expected: ${expectedError}\n\n`);
-					++failures;
-				}
-			} else {
-				++errors;
-				writer.write(`${indent}${fail} compilation error\n${indentCont}${e}\n\n`);
-			}
-			return;
-		}
+
 		if (expectedError) {
-			writer.write(`${indent}${fail} expected compilation error but did not error\n${indentCont}expected: ${expectedError}\n\n`);
-			++failures;
-			return;
-		}
+			test('fails to compile', () => {
+				expect(() => RevExp.compile(pattern, flags), throws(expectedError));
+			});
+		} else {
+			const revexp = RevExp.compile(pattern, flags);
 
-		for (const [test, answer] of tests) {
-			const name = JSON.stringify(test);
-			try {
-				const result = revexp.reverse(test, '?');
+			tests.forEach(([input, answer]) => test(`${JSON.stringify(input)} => ${JSON.stringify(answer)}`, () => {
+				const result = revexp.reverse(input, '?');
 				const sresult = result ? String(result) : null;
-				if (sresult === answer) {
-					writer.write(`${indent}${pass} ${name} => ${JSON.stringify(sresult)}\n`);
-				} else {
-					writer.write(`${indent}${fail} ${name} => ${JSON.stringify(sresult)}\n${indentCont}expected ${JSON.stringify(answer)}\n`);
-					++failures;
-				}
-			} catch (e) {
-				writer.write(`${indent}${fail} ${name}\n${indentCont}error ${e}\n`);
-				++errors;
-			}
+				expect(sresult, equals(answer));
+			}));
 		}
-		writer.write('\n');
-	});
-
-	return { errors, failures };
-}
+	}));
+});
