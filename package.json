@@ -13,7 +13,7 @@
     "index.d.ts"
   ],
   "scripts": {
-    "test": "lean-test",
+    "test": "lean-test && lean-test --browser chrome,firefox",
     "build": "rollup --config rollup.config.js",
     "revexp": "./bin/revexp.mjs"
   },
@@ -31,7 +31,7 @@
   },
   "homepage": "https://github.com/davidje13/RevExp#readme",
   "devDependencies": {
-    "lean-test": "^1.1.0",
+    "lean-test": "^1.4.0",
     "rollup": "^2.56.3",
     "rollup-plugin-terser": "^7.0.2"
   }
