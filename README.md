@@ -6,7 +6,7 @@ The supported syntax is modelled on the standard Javascript `RegExp` object's sy
 
 You can [try it online](https://regex.davidje13.com/) or in the terminal:
 
-```bash
+```shell
 npx revexp 'H(alp|el{2,}[o]) (Wor|wo)lds?' '??????W????'
 ```
 
@@ -75,13 +75,13 @@ console.log(String(resolved)); // "ac"
 
 ### CLI
 
-```bash
+```shell
 npx revexp 'a[bc]|x[yz]' '?c'
 ```
 
 You can also optionally change the "unknown character":
 
-```bash
+```shell
 npx revexp -u'.' 'a[bc]|x[yz]' '.c'
 ```
 
@@ -144,7 +144,8 @@ within `input` is replaced with `CharacterClass.ANY`.
 When invoked with an existing character class array, this will copy the array but make no
 changes to the values (this can be used to avoid mutating the original, for example).
 
-The returned array has an overloaded `toString` which allows easy pretty-printing.
+The returned array has an overloaded `toString` which allows easy pretty-printing, and an
+`isSingular` method which returns true if all the contained character classes are singular.
 
 #### `.test(input[, unknown])`
 
@@ -205,7 +206,8 @@ based on the regular expression and the given `input`. If no matches are possibl
 For an explanation of the `input` and `unknown` parameters, see the information for
 `RevExp.string` above.
 
-The returned array has an overloaded `toString` which allows easy pretty-printing.
+The returned array has an overloaded `toString` which allows easy pretty-printing, and an
+`isSingular` method which returns true if all the contained character classes are singular.
 
 ##### Examples
 

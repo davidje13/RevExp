@@ -23,6 +23,8 @@ declare namespace RevExp {
 		public static range(a: string, b: string): CharacterClass;
 		public static union(...classes: CharacterClass[]): CharacterClass;
 	}
+
+	type CharacterClassString = CharacterClass[] & { isSingular(): boolean };
 }
 
 declare class RevExp {
@@ -34,7 +36,7 @@ declare class RevExp {
 	public reverse(
 		value: string | string[] | RevExp.CharacterClass[],
 		unknown?: string | null | undefined,
-	): RevExp.CharacterClass[] | null;
+	): RevExp.CharacterClassString | null;
 
 	public test(
 		value: string | string[] | RevExp.CharacterClass[],
@@ -56,7 +58,7 @@ declare class RevExp {
 	public static string(
 		value: string | string[] | RevExp.CharacterClass[],
 		unknown?: string | null | undefined,
-	): RevExp.CharacterClass[];
+	): RevExp.CharacterClassString;
 }
 
 export default RevExp;
