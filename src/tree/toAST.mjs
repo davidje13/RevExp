@@ -113,6 +113,7 @@ const _readCharacterClass = (cs, context) => {
 			throw new Error(`Incomplete character range at ${cs.pos}`);
 		}
 		const chars2 = CharacterClass.union(...parts);
+		// TODO: supposed to only allow one operation per group
 		if (op === 'intersect') {
 			chars = chars.intersect(chars2);
 			const l = new Set(strings);
@@ -151,7 +152,11 @@ const _readCharacterClass = (cs, context) => {
 			const s = [];
 			for (let c2; (c2 = cs.get()) !== '}';) {
 				if (c2 === '|') {
-					stringParts.add(s.join(''));
+					if (s.length === 1) {
+						parts.push(CharacterClass.of(s[0]));
+					} else {
+						stringParts.add(s.join(''));
+					}
 					s.length = 0;
 				} else if (c2 === '\\') {
 					s.push(resolve(CHAR_ESC, cs, cs.get(), context).singularChar());
@@ -159,7 +164,11 @@ const _readCharacterClass = (cs, context) => {
 					s.push(c2);
 				}
 			}
-			stringParts.add(s.join(''));
+			if (s.length === 1) {
+				parts.push(CharacterClass.of(s[0]));
+			} else {
+				stringParts.add(s.join(''));
+			}
 		} else if (c === '-' && parts.length > 0 && !nextRange) {
 			nextRange = true;
 		} else {
@@ -176,8 +185,7 @@ const _readCharacterClass = (cs, context) => {
 	endSection();
 	if (invert) {
 		if (strings.size > 0) {
-			// TODO: is this possible somehow?
-			throw new Error('Cannot invert quoted strings');
+			throw new Error('Cannot invert quoted multi-character strings');
 		}
 		return { chars: chars.inverse(), strings: [] };
 	}

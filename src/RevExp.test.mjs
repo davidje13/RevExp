@@ -390,6 +390,16 @@ const CASES = [
 		['????', null],
 	],
 
+	['[abc\\q{ab|c|d}--\\q{a}]', 'v', // mixing characters and single character quoted strings
+		['?', '[bcd]'],
+		['??', 'ab'],
+		['???', null],
+	],
+
+	['[^\\q{a|b}]', 'v', // negate single character quoted strings
+		['?', '[^ab]'],
+	],
+
 	['[\\q{abc|other}]', null, // character class quoted string literals without 'v' (ignored)
 		['?', '[abcehoqrt{\\|}]'],
 	],
@@ -400,6 +410,7 @@ const CASES = [
 	['[a-[bc]]', 'v', 'Incomplete character range'],
 	['[[ab]-c]', 'v', 'Cannot create range using existing ranges'],
 	['[\\q{nope', 'v', 'Incomplete token'],
+	['[^\\q{ab}]', 'v', 'Cannot invert quoted multi-character strings'],
 	['[a-b-c]', null, 'Cannot create range using existing ranges'],
 	['a{}', null, 'Invalid character in quantifier'],
 	['a{', null, 'Invalid character in quantifier'],
