@@ -16,7 +16,9 @@ npx revexp 'H(alp|el{2,}[o]) (Wor|wo)lds?' '??????W????'
 |--------------------------|-----------------------------|---------------|
 | Character classes        | `a` `[aeiou]` `[^a-z]` `\d` | &#x2705; Full |
 | Character escapes        | `\u0020` `\\` `\n` `\(`     | &#x2705; Full |
-| Unicode property escapes | `\p{Letter}`                | &#x274C; None |
+| Unicode properties       | `\p{Letter}`                | &#x274C; None |
+| Set notation             | `[[ab]&&[bc]]` `[[ab]--a]`  | &#x274C; None |
+| String literals          | `[\q{ab\|cd}]`              | &#x274C; None |
 | Branching                | `x\|y`                      | &#x2705; Full |
 | Anchors                  | `^` `$`                     | &#x2705; Full |
 | Word boundary assertions | `\b` `\B`                   | Partial &dagger; |
@@ -47,6 +49,7 @@ narrow inputs when using patterns which include this feature.
 | `m`  | Multi-line search              | &#x2705; Full  |
 | `s`  | `.` matches newline            | &#x2705; Full  |
 | `u`  | Unicode mode                   | None (`false`) |
+| `v`  | Unicode sets                   | None (`false`) |
 | `y`  | Sticky search                  | Not applicable |
 
 ## Usage
