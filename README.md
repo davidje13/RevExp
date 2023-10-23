@@ -12,27 +12,27 @@ npx revexp 'H(alp|el{2,}[o]) (Wor|wo)lds?' '??????W????'
 
 ## Supported Features
 
-| Pattern Feature          | Examples                    | Support       |
-|--------------------------|-----------------------------|---------------|
-| Character classes        | `a` `[aeiou]` `[^a-z]` `\d` | &#x2705; Full |
-| Character escapes        | `\u0020` `\\` `\n` `\(`     | &#x2705; Full |
-| Unicode properties       | `\p{Letter}`                | &#x274C; None |
-| Set notation             | `[[ab]&&[bc]]` `[[ab]--a]`  | &#x274C; None |
-| String literals          | `[\q{ab\|cd}]`              | &#x274C; None |
-| Branching                | `x\|y`                      | &#x2705; Full |
-| Anchors                  | `^` `$`                     | &#x2705; Full |
-| Word boundary assertions | `\b` `\B`                   | Partial &dagger; |
-| Standard quantifiers     | `a*` `a+` `a?`              | &#x2705; Full |
-| Range quantifiers        | `a{2}` `a{2,}` `a{2,3}`     | &#x2705; Full |
-| Lazy quantifiers         | `a+?` `a*?` `a??` `a{2,}?`  | &#x2705; Full |
-| Possessive quantifiers   | `a++` `a*+` `a?+` `a{2,}+`  | &#x274C; None |
-| Groups                   | `(abc)` `(?<name>abc)`      | &#x2705; Full |
-| Backreferences           | `(abc)\1` `(?<x>abc)\k<x>`  | Partial &ddagger; |
-| Non-capturing groups     | `(?:abc)`                   | &#x2705; Full |
-| Positive lookaheads      | `(?=abc)`                   | &#x274C; None |
-| Negative lookaheads      | `(?!abc)`                   | &#x274C; None |
-| Positive lookbehinds     | `(?<=abc)`                  | &#x274C; None |
-| Negative lookbehinds     | `(?<!abc)`                  | &#x274C; None |
+| Pattern Feature          | Examples                     | Support       |
+|--------------------------|------------------------------|---------------|
+| Character classes        | `a` `[aeiou]` `[^a-z]` `\d`  | &#x2705; Full |
+| Character escapes        | `\u0020` `\\` `\n` `\(`      | &#x2705; Full |
+| Unicode properties       | `\p{Letter}` `\p{RGI_Emoji}` | &#x274C; None |
+| Set notation (`v`)       | `[[ab]&&[bc]]` `[[ab]--a]`   | &#x2705; Full |
+| String literals (`v`)    | `[\q{ab\|cd}]`               | &#x2705; Full |
+| Branching                | `x\|y`                       | &#x2705; Full |
+| Anchors                  | `^` `$`                      | &#x2705; Full |
+| Word boundary assertions | `\b` `\B`                    | Partial &dagger; |
+| Standard quantifiers     | `a*` `a+` `a?`               | &#x2705; Full |
+| Range quantifiers        | `a{2}` `a{2,}` `a{2,3}`      | &#x2705; Full |
+| Lazy quantifiers         | `a+?` `a*?` `a??` `a{2,}?`   | &#x2705; Full |
+| Possessive quantifiers   | `a++` `a*+` `a?+` `a{2,}+`   | &#x274C; None |
+| Groups                   | `(abc)` `(?<name>abc)`       | &#x2705; Full |
+| Backreferences           | `(abc)\1` `(?<x>abc)\k<x>`   | Partial &ddagger; |
+| Non-capturing groups     | `(?:abc)`                    | &#x2705; Full |
+| Positive lookaheads      | `(?=abc)`                    | &#x274C; None |
+| Negative lookaheads      | `(?!abc)`                    | &#x274C; None |
+| Positive lookbehinds     | `(?<=abc)`                   | &#x274C; None |
+| Negative lookbehinds     | `(?<!abc)`                   | &#x274C; None |
 
 &dagger;: Two passes may be required to fully narrow an input when using this feature.
 
@@ -41,16 +41,18 @@ qualifier), meaning the syntax is accepted and any full or partial valid input w
 but full or partial invalid inputs may not be rejected, and the library may not be able to fully
 narrow inputs when using patterns which include this feature.
 
-| Flag | Meaning                        | Support        |
-|------|--------------------------------|----------------|
-| `d`  | Output substring match indices | Not applicable |
-| `g`  | Global search                  | Not applicable |
-| `i`  | Case-insensitive search        | None (`false`) |
-| `m`  | Multi-line search              | &#x2705; Full  |
-| `s`  | `.` matches newline            | &#x2705; Full  |
-| `u`  | Unicode mode                   | None (`false`) |
-| `v`  | Unicode sets                   | None (`false`) |
-| `y`  | Sticky search                  | Not applicable |
+| Flag | Meaning                        | Support          |
+|------|--------------------------------|------------------|
+| `d`  | Output substring match indices | Not applicable   |
+| `g`  | Global search                  | Not applicable   |
+| `i`  | Case-insensitive search        | None (`false`)   |
+| `m`  | Multi-line search              | &#x2705; Full    |
+| `s`  | `.` matches newline            | &#x2705; Full    |
+| `u`  | Unicode mode                   | None (`false`)   |
+| `v`  | Unicode sets                   | Partial &dagger; |
+| `y`  | Sticky search                  | Not applicable   |
+
+&dagger;: Sets and string literals are supported, but unicode string attributes are not.
 
 ## Usage
 

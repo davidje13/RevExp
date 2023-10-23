@@ -26,6 +26,7 @@ function parseFlags(flags) {
 		multiline: flags.includes('m'),
 		dotAll: flags.includes('s'),
 		unicode: flags.includes('u'),
+		unicodeSets: flags.includes('v'),
 		sticky: flags.includes('y'),
 	};
 }

@@ -22,20 +22,13 @@ const readHex = (v) => {
 	return Number.parseInt(v, 16);
 };
 
-const ESC = new Map([
-	['d', CharacterClass.NUMERIC],
-	['D', CharacterClass.NUMERIC.inverse()],
-	['w', CharacterClass.WORD],
-	['W', CharacterClass.WORD.inverse()],
-	['s', CharacterClass.SPACE],
-	['S', CharacterClass.SPACE.inverse()],
+const CHAR_ESC = new Map([
 	['t', CharacterClass.of('\t')],
 	['r', CharacterClass.of('\r')],
 	['n', CharacterClass.of('\n')],
 	['v', CharacterClass.of('\v')],
 	['f', CharacterClass.of('\f')],
-	['b', new BoundaryAssertion(CharacterClass.WORD, false)],
-	['B', new BoundaryAssertion(CharacterClass.WORD, true)],
+	['b', CharacterClass.of('\b')],
 	['0', CharacterClass.of('\u0000')],
 	['c', (cs) => CharacterClass.ofCode(1 + cs.get(1).charCodeAt(0) - CHAR_A)],
 	['x', (cs) => CharacterClass.ofCode(readHex(cs.get(2)))],
@@ -44,6 +37,20 @@ const ESC = new Map([
 		return CharacterClass.ofCode(readHex(code));
 	}],
 	['\\', CharacterClass.of('\\')],
+]);
+const CHAR_CLASS_ESC = new Map([
+	...CHAR_ESC,
+	['d', CharacterClass.NUMERIC],
+	['D', CharacterClass.NUMERIC.inverse()],
+	['w', CharacterClass.WORD],
+	['W', CharacterClass.WORD.inverse()],
+	['s', CharacterClass.SPACE],
+	['S', CharacterClass.SPACE.inverse()],
+]);
+const ESC = new Map([
+	...CHAR_CLASS_ESC.entries(),
+	['b', new BoundaryAssertion(CharacterClass.WORD, false)],
+	['B', new BoundaryAssertion(CharacterClass.WORD, true)],
 	['k', (cs, context) => {
 		if (!cs.check('<')) {
 			throw new Error('Incomplete named backreference');
@@ -56,10 +63,6 @@ const ESC = new Map([
 		return new BackReference(ref);
 	}],
 ]);
-const CHAR_CLASS_ESC = new Map(ESC);
-CHAR_CLASS_ESC.set('b', CharacterClass.of('\b'));
-CHAR_CLASS_ESC.delete('B');
-CHAR_CLASS_ESC.delete('k');
 for (let i = 1; i < 10; ++ i) {
 	ESC.set(String(i), (cs, context) => {
 		const ref = context.groupNumbers[i - 1];
@@ -95,12 +98,69 @@ const readQuantifier = (cs) => {
 	return new Quantifier(min, max, readQuantifierMode(cs));
 };
 
-const readCharacterClass = (cs, context) => {
+const _readCharacterClass = (cs, context) => {
 	const invert = cs.check('^');
+	const allowSets = context.flags.unicodeSets;
+	const allowStrings = context.flags.unicodeSets;
 	const parts = [];
+	const strings = new Set();
+	const stringParts = new Set();
+	let chars = CharacterClass.NONE;
+	let op = 'union';
 	let nextRange = false;
+	const endSection = () => {
+		if (nextRange) {
+			throw new Error(`Incomplete character range at ${cs.pos}`);
+		}
+		const chars2 = CharacterClass.union(...parts);
+		if (op === 'intersect') {
+			chars = chars.intersect(chars2);
+			const l = new Set(strings);
+			for (const p of stringParts) {
+				l.delete(p);
+			}
+			for (const p of l) {
+				strings.delete(p);
+			}
+		} else if (op === 'subtract') {
+			chars = chars.intersect(chars2.inverse());
+			for (const p of stringParts) {
+				strings.delete(p);
+			}
+		} else {
+			chars = chars.union(chars2);
+			for (const p of stringParts) {
+				strings.add(p);
+			}
+		}
+		parts.length = 0;
+		stringParts.clear();
+	};
 	for (let c; (c = cs.get()) !== ']';) {
-		if (c === '-' && parts.length > 0) {
+		if (allowSets && c === '[') {
+			const sub = _readCharacterClass(cs, context);
+			parts.push(sub.chars);
+			stringParts.add(sub.strings);
+		} else if (allowSets && c === '&' && cs.check('&')) {
+			endSection();
+			op = 'intersect';
+		} else if (allowSets && c === '-' && cs.check('-')) {
+			endSection();
+			op = 'subtract';
+		} else if (allowStrings && c === '\\' && cs.check('q{')) {
+			const s = [];
+			for (let c2; (c2 = cs.get()) !== '}';) {
+				if (c2 === '|') {
+					stringParts.add(s.join(''));
+					s.length = 0;
+				} else if (c2 === '\\') {
+					s.push(resolve(CHAR_ESC, cs, cs.get(), context).singularChar());
+				} else {
+					s.push(c2);
+				}
+			}
+			stringParts.add(s.join(''));
+		} else if (c === '-' && parts.length > 0) {
 			nextRange = true;
 		} else {
 			let part = (c === '\\')
@@ -113,11 +173,27 @@ const readCharacterClass = (cs, context) => {
 			parts.push(part);
 		}
 	}
-	if (nextRange) {
-		throw new Error(`Incomplete character range at ${cs.pos}`);
+	endSection();
+	if (invert) {
+		if (strings.size > 0) {
+			// TODO: is this possible somehow?
+			throw new Error('Cannot invert quoted strings');
+		}
+		return { chars: chars.inverse(), strings: [] };
 	}
-	const chars = CharacterClass.union(...parts);
-	return invert ? chars.inverse() : chars;
+	return { chars, strings };
+};
+
+const readCharacterClass = (cs, context) => {
+	const { chars, strings } = _readCharacterClass(cs, context);
+	const options = [];
+	for (const s of strings) {
+		options.push(toChain([...s].map(CharacterClass.of)));
+	}
+	if (!chars.isEmpty()) {
+		options.push(chars);
+	}
+	return options.length === 1 ? options[0] : new Choice(options);
 };
 
 const getGroupMode = (cs) => {

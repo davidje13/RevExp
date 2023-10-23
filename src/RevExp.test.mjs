@@ -347,9 +347,51 @@ const CASES = [
 		//['??', '[ x][ x]'], // TODO
 	],
 
+	['[abc--bc]', 'v', // character class set operations
+		['?', 'a'],
+	],
+
+	['[abc&&bc]', 'v',
+		['?', '[bc]'],
+	],
+
+	['[[abc]&&[^bc]]', 'v',
+		['?', 'a'],
+	],
+
+	['[abc&&bc]', null, // character class set operations without 'v' (ignored)
+		['?', '[&abc]'],
+	],
+
+	['[\\q{abc|other}]', 'v', // character class quoted string literals
+		['?', null],
+		['???', 'abc'],
+		['?????', 'other'],
+		['????', null],
+	],
+
+	['[a\\q{abc}b]', 'v',
+		['?', '[ab]'],
+		['???', 'abc'],
+		['??', null],
+	],
+
+	['[\\q{abc|def|ghi}--\\q{abc|def}]', 'v',
+		['?', null],
+		['???', 'ghi'],
+		['????', null],
+	],
+
+	['[\\q{abc|other}]', null, // character class quoted string literals without 'v' (ignored)
+		['?', '[abcehoqrt{\\|}]'],
+	],
+
 	['(a', null, 'Incomplete token'],
 	['[a', null, 'Incomplete token'],
 	['[a-]', null, 'Incomplete character range'],
+	['[a-[bc]]', 'v', 'Incomplete character range'],
+	['[[ab]-c]', 'v', 'Cannot create range using existing ranges'],
+	['[\\q{nope', 'v', 'Incomplete token'],
 	['[a-b-c]', null, 'Cannot create range using existing ranges'],
 	['a{}', null, 'Invalid character in quantifier'],
 	['a{', null, 'Invalid character in quantifier'],
