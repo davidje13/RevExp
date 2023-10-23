@@ -160,7 +160,7 @@ const _readCharacterClass = (cs, context) => {
 				}
 			}
 			stringParts.add(s.join(''));
-		} else if (c === '-' && parts.length > 0) {
+		} else if (c === '-' && parts.length > 0 && !nextRange) {
 			nextRange = true;
 		} else {
 			let part = (c === '\\')

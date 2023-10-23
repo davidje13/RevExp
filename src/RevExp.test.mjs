@@ -46,6 +46,14 @@ const CASES = [
 		['e', null],
 	],
 
+	['[+--]', null, // character range to -
+		['?', '[+,\\-]'],
+	],
+
+	['[--/]', null, // character range from -
+		['?', '[\\-.\\u002f]'],
+	],
+
 	['.', null, // any (default flags)
 		['a', 'a'],
 		['\n', null],
